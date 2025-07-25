@@ -1,20 +1,26 @@
 "use client";
 
-import { Header } from "/components/header"
+import { Header } from "/src/components/header";
+import { useState } from "react";
 import { Search, Clock, Star, TrendingUp } from "lucide-react";
 
+export const Page = () => {
+  const [selected, setSelected] = useState("All");
 
-export const HomePage = () => {
-  return <div className="min-h-screen bg-background">
-    <Header/>
+  const tabs = ["All", "Games", "Anime"];
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
       <section className="relative py-20 px-4 overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center object-cover"
-          style={{ backgroundImage: 'url(https://wallpaperaccess.com/full/42630.jpg)' }}
+          style={{
+            backgroundImage: "url(https://wallpaperaccess.com/full/42630.jpg)",
+          }}
         >
           <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
         </div>
-        
+
         <div className="relative container mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-4">
             Latest in{" "}
@@ -27,12 +33,12 @@ export const HomePage = () => {
             </span>
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-gray-400">
-            Stay updated with the hottest news, reviews, and updates from the world of games and anime
+            Stay updated with the hottest news, reviews, and updates from the
+            world of games and anime
           </p>
         </div>
       </section>
-    <main className="container mx-auto px-4 py-8">
-
+      <main className="container mx-auto px-4 py-8">
         {/* Search & Filters */}
         <div className="mb-8">
           <div className="hidden md:flex w-full">
@@ -47,9 +53,23 @@ export const HomePage = () => {
           </div>
         </div>
 
-      {/* Filter Tabs */}
-        </main>
+        {/* Filter Tabs */}
+        <div className="flex bg-gray-200 rounded-lg p-1">
+      {tabs.map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setSelected(tab)}
+          className={`flex-1 text-center rounded-md py-2 px-4 transition-colors duration-200
+            ${selected === tab ? "bg-white font-semibold" : "hover:bg-white"}
+          `}
+        >
+          {tab}
+        </button>
+      ))}
     </div>
-}
+      </main>
+    </div>
+  );
+};
 
-export default HomePage;
+export default Page;

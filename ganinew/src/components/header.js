@@ -1,6 +1,8 @@
 "use client";
-import React, { useState } from 'react';
-import { Search, Menu, User } from 'lucide-react';
+import React, { useState } from "react";
+import { Search, Menu, User, Bell } from "lucide-react";
+import { NotificationDropdown } from "@/components/notiDropdown";
+import { Button } from "@/components/ui/button"
 
 export const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -34,36 +36,37 @@ export const Header = () => {
           </div>
 
           {/* Mobile Search */}
-        <div className="md:hidden mt-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-            <input
-            type='text'
-              placeholder="Search games, anime..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+          <div className="md:hidden mt-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search games, anime..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
           </div>
-        </div>
 
           {/* user-menu */}
-        <div className="flex items-center space-x-2">
-
-          {/* Mobile menu */}
-            <button variant="ghost" size="icon" className="md:hidden">
+          <div className="flex items-center space-x-2">
+            {/* Mobile menu */}
+            <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
-            </button>
+            </Button>
 
-          <button
-                className="hover:bg-green-400 rounded-xl transition-colors p-2"
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowLogin(true)}
-              >
-                <User className="h-5 w-5 hover:text-white"/>
-          </button>
-        </div>
+            <NotificationDropdown/>
+
+            <Button
+              className="hover:bg-green-400 rounded-xl transition-colors p-2"
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowLogin(true)}
+            >
+              <User className="h-5 w-5 hover:text-white" />
+            </Button>
+          </div>
         </div>
       </div>
     </header>
