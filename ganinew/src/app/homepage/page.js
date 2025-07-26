@@ -112,7 +112,7 @@ export const Page = () => {
   const tabs = ["All", "Games", "Anime"];
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
       <section className="relative py-20 px-4 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center object-cover"

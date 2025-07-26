@@ -18,7 +18,12 @@ export default function ImageUpload() {
     };
     return (
         <div>
-            <input type="file" accept="image/*" onChange={handleUpload} />
+            <input type="file" accept="image/*" onChange={handleUpload} className="block w-full text-sm text-gray-500
+             file:mr-4 file:py-2 file:px-4
+             file:rounded-md file:border-0
+             file:text-sm file:font-semibold
+             file:bg-indigo-50 file:text-purple-500
+             hover:file:bg-indigo-100"/>
             {filename && <p>อัปโหลดแล้ว: {filename}</p>}
         </div>
     )
