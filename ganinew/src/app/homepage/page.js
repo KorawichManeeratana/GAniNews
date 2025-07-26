@@ -3,9 +3,111 @@
 import { Header } from "/src/components/header";
 import { useState } from "react";
 import { Search, Clock, Star, TrendingUp } from "lucide-react";
+import { Filterrow } from "@/components/filterrow";
+import { useRouter } from 'next/navigation';
+import { Button } from "@/components/ui/button"
+
+
+const mockNews = [
+  {
+    id: "1",
+    title: "Epic Fantasy RPG 'Dragon's Awakening' Gets Massive Update",
+    description: "The latest update introduces new storylines, character classes, and an entirely new realm to explore. Players can now experience enhanced magic systems and legendary weapons.",
+    thumbnail: "https://gaming-cdn.com/images/products/14833/orig-fallback-v1/expeditions-a-mudrunner-game-pc-game-steam-cover.jpg?v=1692966171",
+    category: "Game",
+    tags: ["RPG", "Fantasy", "Adventure"],
+    timestamp: "2 hours ago",
+    likes: 156,
+    comments: 23,
+  },
+  {
+    id: "2",
+    title: "Attack on Titan Final Season Part 4 Release Date Announced",
+    description: "Studio WIT reveals the official release date for the highly anticipated final episodes. Fans can expect incredible animation and epic battles in the conclusion of this beloved series.",
+    thumbnail: "https://tse1.mm.bing.net/th/id/OIP.Tv2cyykwqI8K1J7I7_urbwHaEK?pid=Api&P=0&h=180",
+    category: "Anime",
+    tags: ["Action", "Drama", "Fantasy"],
+    timestamp: "4 hours ago",
+    likes: 342,
+    comments: 67,
+  },
+  {
+    id: "3",
+    title: "Cyberpunk 2078: Next-Gen Gaming Experience Preview",
+    description: "Get an exclusive look at the upcoming cyberpunk adventure that promises to redefine open-world gaming with AI-driven NPCs and revolutionary graphics technology.",
+    thumbnail: "https://venturebeat.com/wp-content/uploads/2013/02/candycrushsaga.jpg?strip=all",
+    category: "Game",
+    tags: ["Action", "Sci-Fi", "Adventure"],
+    timestamp: "6 hours ago",
+    likes: 89,
+    comments: 12,
+  },
+  {
+    id: "4",
+    title: "Magical Academy Anime 'Arcane Scholars' Trailer Released",
+    description: "A new magical school anime promises breathtaking animation and compelling character development. Follow students as they master ancient spells and face mystical challenges.",
+    thumbnail: "https://images.wallpapersden.com/image/download/ubisoft-assassin-s-creed-mirage-2023-game-poster_bWtnbmeUmZqaraWkpJRnZWltrWZmamc.jpg",
+    category: "Anime",
+    tags: ["Fantasy", "Romance", "Adventure"],
+    timestamp: "8 hours ago",
+    likes: 201,
+    comments: 45,
+  },
+];
+
 
 export const Page = () => {
   const [selected, setSelected] = useState("All");
+  const router = useRouter();
+  const [filteredNews, setFilteredNews] = useState(mockNews);
+  const [activeFilter, setActiveFilter] = useState("trending");
+
+  const goToPath = () => {
+    router.push('/');
+  };
+
+  const handleFiltersChange = (filters) => {
+    let filtered = [...mockNews];
+
+    // Search filter
+    if (filters.search) {
+      filtered = filtered.filter(
+        (news) =>
+          news.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+          news.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+          news.tags.some((tag) =>
+            tag.toLowerCase().includes(filters.search.toLowerCase())
+          )
+      );
+    }
+
+    // Category filter
+    if (filters.category !== "all") {
+      filtered = filtered.filter(
+        (news) => news.category.toLowerCase() === filters.category
+      );
+    }
+
+    // Genre filter
+    if (filters.genres.length > 0) {
+      filtered = filtered.filter((news) =>
+        filters.genres.some((genre) => news.tags.includes(genre))
+      );
+    }
+
+    setFilteredNews(filtered);
+  };
+
+  const handleNewsClick = (newsId) => {
+    goToPath();
+  };
+
+  const filterButtons = [
+    { id: "trending", label: "Trending", icon: TrendingUp },
+    { id: "recent", label: "Recent", icon: Clock },
+    { id: "popular", label: "Popular", icon: Star },
+  ];
+
 
   const tabs = ["All", "Games", "Anime"];
   return (
@@ -41,32 +143,26 @@ export const Page = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Search & Filters */}
         <div className="mb-8">
-          <div className="hidden md:flex w-full">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search games, anime..."
-                className="pl-10 py-2 w-full rounded-2xl border border-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-            </div>
-          </div>
+          <Filterrow onFiltersChange={handleFiltersChange} />
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex bg-gray-200 rounded-lg p-1">
-      {tabs.map((tab) => (
-        <button
-          key={tab}
-          onClick={() => setSelected(tab)}
-          className={`flex-1 text-center rounded-md py-2 px-4 transition-colors duration-200
-            ${selected === tab ? "bg-white font-semibold" : "hover:bg-white"}
-          `}
-        >
-          {tab}
-        </button>
-      ))}
-    </div>
+          <div className="mb-6">
+          <div className="flex gap-2">
+            {filterButtons.map((filter) => (
+              <Button
+                key={filter.id}
+                variant={activeFilter === filter.id ? "default" : "outline"}
+                size="sm"
+                onClick={() => setActiveFilter(filter.id)}
+                className="flex items-center gap-2"
+              >
+                <filter.icon className="h-4 w-4" />
+                {filter.label}
+              </Button>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   );
