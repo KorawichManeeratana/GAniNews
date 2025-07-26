@@ -6,7 +6,7 @@ import { Search, Clock, Star, TrendingUp } from "lucide-react";
 import { Filterrow } from "@/components/filterrow";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button"
-
+import { NewsCard } from "@/components/newsCard";
 
 const mockNews = [
   {
@@ -134,7 +134,7 @@ export const Page = () => {
               Anime
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto text-gray-400">
+          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto ">
             Stay updated with the hottest news, reviews, and updates from the
             world of games and anime
           </p>
@@ -163,6 +163,26 @@ export const Page = () => {
             ))}
           </div>
         </div>
+
+        {/* News Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {filteredNews.map((news) => (
+            <NewsCard
+              key={news.id}
+              {...news}
+              onClick={() => handleNewsClick(news.id)}
+            />
+          ))}
+        </div>
+
+        {filteredNews.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">
+              No news found matching your filters.
+            </p>
+          </div>
+        )}
+
       </main>
     </div>
   );
