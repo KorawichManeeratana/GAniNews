@@ -62,9 +62,6 @@ export const Page = () => {
   const [filteredNews, setFilteredNews] = useState(mockNews);
   const [activeFilter, setActiveFilter] = useState("trending");
 
-  const goToPath = () => {
-    router.push('/');
-  };
 
   const handleFiltersChange = (filters) => {
     let filtered = [...mockNews];
@@ -99,7 +96,7 @@ export const Page = () => {
   };
 
   const handleNewsClick = (newsId) => {
-    goToPath();
+    router.push("/newsDetail")
   };
 
   const filterButtons = [

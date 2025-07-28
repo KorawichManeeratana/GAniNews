@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 
+
 export const NewsCard = ({
   id,
   title,
@@ -26,8 +27,8 @@ export const NewsCard = ({
         setLikes(prev => liked ? prev - 1 : prev + 1);
     };
 
-    const categoryColor = category === "Game" ? "bg-primary" : "bg-accent";
-    
+    const categoryColor = category === "Game" ? "bg-purple-500" : "bg-green-500";
+
     return(
     <Card 
       className="group cursor-pointer hover:shadow-card transition-all duration-300 hover:-translate-y-1"

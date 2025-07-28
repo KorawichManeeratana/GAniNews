@@ -1,11 +1,20 @@
 "use client";
 import React, { useState } from "react";
-import { Search, Menu, User, Bell } from "lucide-react";
+import { Search, Menu, User, Bell, Plus} from "lucide-react";
 import { NotificationDropdown } from "@/components/notiDropdown";
 import { Button } from "@/components/ui/button"
+import { LoginModal } from "@/components/loginModal"
+import { useRouter } from 'next/navigation';
+
 
 export const Header = () => {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showLogin, setShowLogin] = useState(false);
+
+  const handleCreatePost = () => {
+    router.push('/createpost');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -35,6 +44,8 @@ export const Header = () => {
             </div>
           </div>
 
+          
+
           {/* Mobile Search */}
           <div className="md:hidden mt-3">
             <div className="relative">
@@ -49,8 +60,21 @@ export const Header = () => {
             </div>
           </div>
 
+          
+
           {/* user-menu */}
           <div className="flex items-center space-x-2">
+            {/* Create Post Button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCreatePost}
+              className="hidden md:flex items-center gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create Post
+            </Button>
+
             {/* Mobile menu */}
             <Button variant="ghost" size="icon" className="md:hidden">
               <Menu className="h-5 w-5" />
@@ -69,6 +93,8 @@ export const Header = () => {
           </div>
         </div>
       </div>
+
+      <LoginModal open={showLogin} onOpenChange={setShowLogin} />
     </header>
   );
 };
