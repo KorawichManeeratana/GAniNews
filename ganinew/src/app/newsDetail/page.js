@@ -93,7 +93,7 @@ export default function Page(params) {
         <Header />
         <div className="container mx-auto px-4 py-8 text-center">
           <h1 className="text-2xl font-bold mb-4">News Not Found</h1>
-          <Button onClick={() => navigate("/")}>Return to Homepage</Button>
+          <Button onClick={handleBackToHome}>Return to Homepage</Button>
         </div>
       </div>
     );
