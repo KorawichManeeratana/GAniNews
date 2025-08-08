@@ -4,18 +4,20 @@ import { useState } from "react";
 import Editors from "@/components/editor";
 import ImageUpload from "@/components/upload";
 import Link from "next/link";
+import addPost from "./action";
 
 export const createpost = () => {
+    const [content, setContent] = useState('')
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="flex justify-center mb-6">
-               
-                 <Link href="/homepage" className="inline-block min-w-[200px] text-center rounded-md px-4 py-2 font-semibold hover:bg-purple-500 hover:text-white transition">← Back to HomePage</Link>
-                 
+
+                <Link href="/homepage" className="inline-block min-w-[200px] text-center rounded-md px-4 py-2 font-semibold hover:bg-purple-500 hover:text-white transition">← Back to HomePage</Link>
+
             </div>
             <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
                 <h1 className="text-2xl font-bold text-purple-500">Create a New Post</h1>
-                <form className="flex flex-col space-y-4">
+                <form action={addPost} className="flex flex-col space-y-4">
                     <div>
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                             Title
@@ -44,7 +46,8 @@ export const createpost = () => {
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">Post Content</label>
-                        <Editors />
+                        <Editors value={content} onChange={setContent} />
+                        <input type="hidden" name="content" value={content} />
                     </div>
 
                     <div>
