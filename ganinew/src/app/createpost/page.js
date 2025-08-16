@@ -4,7 +4,7 @@ import { useState } from "react";
 import Editors from "@/components/editor";
 import ImageUpload from "@/components/upload";
 import Link from "next/link";
-import addPost from "./action";
+import createPost from "./action";
 
 export const createpost = () => {
     const [content, setContent] = useState('')
@@ -17,7 +17,7 @@ export const createpost = () => {
             </div>
             <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
                 <h1 className="text-2xl font-bold text-purple-500">Create a New Post</h1>
-                <form action={addPost} className="flex flex-col space-y-4">
+                <form action={createPost} className="flex flex-col space-y-4">
                     <div>
                         <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                             Title

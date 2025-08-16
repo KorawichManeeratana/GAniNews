@@ -30,9 +30,9 @@ model Posts {
   title      String
   body       String
   user_id    Int
-  status     String
+  status     String  @default("Available")
   created_at DateTime @default(now())
-  like       Int
+  likes       Int @default(0)
   category   String
 
   user          Users          @relation(fields: [user_id], references: [id])

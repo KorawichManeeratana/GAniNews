@@ -1,18 +1,22 @@
 'use server'
 import pool from "@/lib/db";
-
-export default async function addPost(formData) {
+import { PrismaClient } from "@/generated/prisma";
+const prisma = new PrismaClient()
+export default async function createPost(formData) {
     const title = formData.get('title')
     const category = formData.get('category')
     const content = formData.get('content')
     try {
-        const client = await pool.connect()
-        console.log("db connected")
-        await client.query(
-        'INSERT INTO posts (title, body, created_at, category) VALUES ($1, $2,NOW(), $3)',
-        [title, content, category]
-        ) 
-        client.release()
+        const insertdata = await prisma.Posts.create({
+            data: {
+                title : title,
+                body : content,
+                category : category,
+                user_id : 1
+            }
+        })
+        console.log("Insert success:", insertdata);
+        return insertdata;
     } catch (err) {
         console.error('DB connection error:', err)
         return (<div>Connot connect</div>)
