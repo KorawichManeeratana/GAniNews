@@ -8,14 +8,15 @@ import { useState } from "react";
 export const NewsCard = ({
   id,
   title,
-  description,
+  body,
   thumbnail,
   category,
-  tags,
-  timestamp,
+  genres,
+  created_at,
   likes: initialLikes,
   comments,
   isLiked = false,
+  description,
   onClick,
 }) => {
     const [likes, setLikes] = useState(initialLikes);
@@ -26,8 +27,24 @@ export const NewsCard = ({
         setLiked(!liked);
         setLikes(prev => liked ? prev - 1 : prev + 1);
     };
-
+    
+    const tags = genres.map((g) => g.genre.gen_name).join(", ")
     const categoryColor = category === "Game" ? "bg-purple-500" : "bg-green-500";
+
+    function timeAgo(dateString) {
+        const now = new Date()
+        const past = new Date(dateString)
+        const diffMs = now - past // ต่างกันเป็น milliseconds
+        const diffSec = Math.floor(diffMs / 1000)
+        const diffMin = Math.floor(diffSec / 60)
+        const diffHour = Math.floor(diffMin / 60)
+        const diffDay = Math.floor(diffHour / 24)
+
+        if (diffSec < 60) return `${diffSec} วินาทีที่แล้ว`
+        if (diffMin < 60) return `${diffMin} นาทีที่แล้ว`
+        if (diffHour < 24) return `${diffHour} ชั่วโมงที่แล้ว`
+        return `${diffDay} วันที่แล้ว`
+    }
 
     return(
     <Card 
@@ -47,7 +64,7 @@ export const NewsCard = ({
             </Badge>
           </div>
           <div className="absolute top-3 right-3 flex gap-1">
-            {tags.slice(0, 2).map((tag) => (
+            {tags.split(",").slice(0, 2).map((tag) => (
               <Badge key={tag} variant="secondary" className="text-xs">
                 {tag}
               </Badge>
@@ -68,7 +85,7 @@ export const NewsCard = ({
           
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />
-            <span>{timestamp}</span>
+            <span>{timeAgo(created_at)}</span>
             {tags.length > 2 && (
               <>
                 <Tag className="h-3 w-3 ml-2" />
@@ -99,7 +116,7 @@ export const NewsCard = ({
                 }}
               >
                 <MessageCircle className="h-4 w-4 mr-1" />
-                <span className="text-xs">{comments}</span>
+                <span className="text-xs">{comments.length}</span>
               </Button>
             </div>
           </div>

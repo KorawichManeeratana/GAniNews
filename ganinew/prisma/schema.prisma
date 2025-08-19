@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -34,6 +33,7 @@ model Posts {
   created_at DateTime @default(now())
   likes       Int @default(0)
   category   String
+  description String @default("NULL")
 
   user          Users          @relation(fields: [user_id], references: [id])
   comments      Comment[]
