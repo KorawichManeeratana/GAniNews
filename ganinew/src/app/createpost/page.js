@@ -10,7 +10,7 @@ export const createpost = () => {
     const [content, setContent] = useState('')
     const [genresdata, setGenresdata] = useState([])
     const [selectgen, setSelectgen] = useState([])
-
+    const [thumbnail, setThumbnail] = useState('')
     const togglegen = (genre) => {
         if (selectgen.includes(genre)) {
             setSelectgen(prevItems => prevItems.filter(item => item !== genre));
@@ -51,7 +51,7 @@ export const createpost = () => {
                             id="title"
                             className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                             placeholder="Enter post title"
-                        />
+                            required />
                     </div>
 
                     <div>
@@ -104,9 +104,21 @@ export const createpost = () => {
                         <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
                             Thumbnail Image
                         </label>
-                        <ImageUpload />
+                        <ImageUpload onUpload={(link) => setThumbnail(link)} required />
+                        <input
+                            type="hidden"
+                            name="image"
+                            value={thumbnail || ""}
+                        />
                     </div>
-                    <div>
+                    <div className="flex flex-col items-center">
+                        {thumbnail && (
+                            <img
+                                src={thumbnail}
+                                alt="preview"
+                                className="w-32 mt-2 rounded-lg shadow-md object-cover"
+                            />
+                        )}
                         <button
                             type="submit"
                             className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition"
@@ -114,6 +126,7 @@ export const createpost = () => {
                             Publish Post
                         </button>
                     </div>
+
                 </form>
             </div>
         </div>

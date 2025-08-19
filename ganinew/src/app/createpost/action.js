@@ -1,12 +1,13 @@
 'use server'
-import { PrismaClient } from "@/generated/prisma";
+import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 const prisma = new PrismaClient()
 export default async function createPost(formData) {
     const title = formData.get('title')
     const category = formData.get('category')
     const content = formData.get('content')
-    const genresform = formData.get('genres');
+    const genresform = formData.get('genres')
+    const images = formData.get('image')
     let genres = [];
     try {
         genres = JSON.parse(genresform);
@@ -14,12 +15,13 @@ export default async function createPost(formData) {
         genres = [];
     }
     try {
-        const insertdata = await prisma.Posts.create({
+        const insertdata = await prisma.posts.create({
             data: {
                 title: title,
                 body: content,
                 category: category,
-                user_id: 1
+                user_id: 1,
+                image : images
             },
             select: {
                 id: true
@@ -45,6 +47,7 @@ export default async function createPost(formData) {
             throw err;
         }
         console.error("DB connection error:", err);
+        console.error(err);
         throw new Error("Cannot connect");
     }
 

@@ -17,10 +17,12 @@ export default function PostsPage() {
 
       <div className="grid gap-6 max-w-3xl mx-auto">
         {posts.map((post) => (
+          
           <div
             key={post.id}
             className="bg-white rounded-2xl shadow-lg p-6 border hover:shadow-xl transition"
           >
+            <img src={post.image} alt="Girl in a jacket"/>
             <h2 className="text-xl font-semibold text-gray-800 mb-2">
               {post.title}
             </h2>
