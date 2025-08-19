@@ -1,6 +1,6 @@
 "use client";
 import { Header } from "/src/components/header";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Editors from "@/components/editor";
 import ImageUpload from "@/components/upload";
 import Link from "next/link";
@@ -8,6 +8,30 @@ import createPost from "./action";
 
 export const createpost = () => {
     const [content, setContent] = useState('')
+    const [genresdata, setGenresdata] = useState([])
+    const [selectgen, setSelectgen] = useState([])
+
+    const togglegen = (genre) => {
+        if (selectgen.includes(genre)) {
+            setSelectgen(prevItems => prevItems.filter(item => item !== genre));
+        }
+        else {
+            setSelectgen(prevItems => [...prevItems, genre]);
+        }
+
+    }
+    useEffect(() => {
+        const fetchdata = async () => {
+            try {
+                const res = await fetch('/api/genres')
+                const data = await res.json()
+                setGenresdata(data)
+            } catch (err) {
+                console.log("Error is : ", err)
+            }
+        }
+        fetchdata()
+    }, [])
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="flex justify-center mb-6">
@@ -55,26 +79,25 @@ export const createpost = () => {
                             Genres
                         </label>
                         <div className="flex flex-wrap gap-2">
-                            {[
-                                "Action",
-                                "Adventure",
-                                "RPG",
-                                "Fantasy",
-                                "Sci-Fi",
-                                "Romance",
-                                "Drama",
-                                "Comedy",
-                                "Horror",
-                                "Mystery",
-                            ].map((genre) => (
+                            {genresdata.map((genre) => (
                                 <button
-                                    key={genre}
+                                    key={genre.id}
                                     type="button"
-                                    className="px-4 py-1 rounded-full bg-white hover:text-white hover:bg-purple-500 transition"
+                                    onClick={() => togglegen(genre)}
+                                    className={`px-4 py-1 rounded-full transition ${selectgen.find((g) => g.id === genre.id)
+                                        ? 'bg-purple-500 text-white'
+                                        : 'bg-white hover:bg-purple-500 hover:text-white'
+                                        }`}
                                 >
-                                    {genre}
+                                    {genre.gen_name}
                                 </button>
+
                             ))}
+                            <input
+                                type="hidden"
+                                name="genres"
+                                value={JSON.stringify(selectgen.map(g => g.id))}
+                            />
                         </div>
                     </div>
                     <div>
