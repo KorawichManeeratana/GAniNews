@@ -9,7 +9,7 @@ export const NewsCard = ({
   id,
   title,
   body,
-  thumbnail,
+  image,
   category,
   genres,
   created_at,
@@ -54,7 +54,7 @@ export const NewsCard = ({
       <CardHeader className="p-0">
         <div className="relative overflow-hidden rounded-t-lg">
           <img
-            src={thumbnail}
+            src={image}
             alt={title}
             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
           />

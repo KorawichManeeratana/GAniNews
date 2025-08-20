@@ -22,6 +22,27 @@ model Users {
   email      String
 
   posts Posts[]
+  userinfo UserInfo?
+}
+model UserInfo {
+  id       Int     @id @default(autoincrement())
+  bio      String?
+  location String?
+  name     String?
+  photo    String?
+  user_id  Int     @unique
+
+  user Users @relation(fields: [user_id], references: [id])
+  usergen UserGen[]
+}
+model UserGen {
+  userinfo_id Int
+  gen_id      Int
+
+  userinfo UserInfo @relation(fields: [userinfo_id], references: [id])
+  genre    Genres   @relation(fields: [gen_id], references: [id])
+
+  @@id([userinfo_id, gen_id])
 }
 
 model Posts {
@@ -34,6 +55,7 @@ model Posts {
   likes       Int @default(0)
   category   String
   description String @default("NULL")
+  image String @default("https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png")
 
   user          Users          @relation(fields: [user_id], references: [id])
   comments      Comment[]
@@ -46,6 +68,7 @@ model Genres {
   gen_name String
 
   posts genrespost[]
+  usergen UserGen[]
 }
 
 model genrespost {

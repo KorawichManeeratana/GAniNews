@@ -7,6 +7,7 @@ export default async function createPost(formData) {
     const category = formData.get('category')
     const content = formData.get('content')
     const genresform = formData.get('genres')
+    const description = formData.get('description')
     const images = formData.get('image')
     let genres = [];
     try {
@@ -15,12 +16,13 @@ export default async function createPost(formData) {
         genres = [];
     }
     try {
-        const insertdata = await prisma.posts.create({
+        const insertdata = await prisma.Posts.create({
             data: {
                 title: title,
                 body: content,
                 category: category,
                 user_id: 1,
+                description : description,
                 image : images
             },
             select: {
@@ -40,15 +42,13 @@ export default async function createPost(formData) {
                 )
             )
         }
-        console.log("Insert success:", insertdata);
         redirect("/")
     } catch (err) {
         if (err.digest?.startsWith("NEXT_REDIRECT")) {
             throw err;
         }
-        console.error("DB connection error:", err);
         console.error(err);
-        throw new Error("Cannot connect");
+        throw new Error("Someting Wrong!");
     }
 
 }

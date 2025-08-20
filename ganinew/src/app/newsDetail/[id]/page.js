@@ -84,12 +84,12 @@ export default function Page({ params }) {
           {/* Header Image */}
           <div className="relative mb-8 rounded-lg overflow-hidden">
             <img
-              src={newsDetail.thumbnail}
+              src={newsDetail.image}
               alt={newsDetail.title}
               className="w-full h-64 md:h-96 object-cover"
             />
             <div className="absolute top-4 left-4">
-              <Badge className={`${categoryColor} text-white`}>
+              <Badge className={`${categoryColor} text-gray`}>
                 {newsDetail.category}
               </Badge>
             </div>

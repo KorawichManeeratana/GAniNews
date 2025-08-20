@@ -1,11 +1,35 @@
 "use client"
 import { Header } from "/src/components/header";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Editors from "@/components/editor";
 import ImageUpload from "@/components/upload";
 import Link from "next/link";
-
+import createProfile from "./action"
 export default function Editprofile() {
+  const [thumbnail, setThumbnail] = useState('')
+  const [selectgen, setSelectgen] = useState([])
+  const [genresdata, setGenresdata] = useState([])
+  const togglegen = (genre) => {
+    if (selectgen.includes(genre)) {
+      setSelectgen(prevItems => prevItems.filter(item => item !== genre));
+    }
+    else {
+      setSelectgen(prevItems => [...prevItems, genre]);
+    }
+
+  }
+  useEffect(() => {
+    const fetchdata = async () => {
+      try {
+        const res = await fetch('/api/genres')
+        const data = await res.json()
+        setGenresdata(data)
+      } catch (err) {
+        console.log("Error is : ", err)
+      }
+    }
+    fetchdata()
+  }, [])
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="flex justify-center mb-6">
@@ -14,32 +38,68 @@ export default function Editprofile() {
 
       </div>
       <div>
-        <div className="flex items-center justify-center mb-10">
-          <h1 className="text-2xl font-bold text-purple-500">
-            Edit Your Profile
-          </h1>
-        </div>
-        <form className="grid-flow-col space-y-4">
+        <form action={createProfile} className="grid-flow-col space-y-4">
           <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
-            <h1>Image Preview</h1>
-            <button
-              type="submit"
-              className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition"
-            >
-              Upload Image
-            </button>
+            <h1 className="text-2xl font-bold text-purple-500">
+              Edit Profile
+            </h1>
+            <div className="flex justify-center">
+              <img
+                src={thumbnail ? thumbnail : "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
+                alt="preview"
+                className={`w-32 mt-2 rounded-lg shadow-md object-cover ${thumbnail ? "" : "opacity-100"}`}
+              />
+            </div>
+            <ImageUpload onUpload={(link) => setThumbnail(link)} required />
+            <input
+              type="hidden"
+              name="image"
+              value={thumbnail || ""}
+            />
           </div>
-          <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-              Username
+          <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-2">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Name
             </label>
             <input
-              name="username"
-              id="username"
+              name="name"
+              id="name"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              placeholder="new username here.."
-            />
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              placeholder="Enter your name..."
+            required/>
+
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
+            <input
+              name="email"
+              id="email"
+              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              placeholder="Enter your new email..."
+            required/>
+
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+              Location
+            </label>
+            <input
+              name="location"
+              id="location"
+              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              placeholder="Enter your location..."
+            required/>
+
+            <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
+              Bio
+            </label>
+            <textarea
+              name="bio"
+              id="bio"
+              rows={4}
+              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+              placeholder="Tell us about yourself..."
+            required/>
+
+            {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
             </label>
             <input
@@ -50,27 +110,46 @@ export default function Editprofile() {
             />
             <label htmlFor="newpassword" className="block text-sm font-medium text-gray-700">
               Password
-            </label>
-            <input
+            </label> */
+            /* <input
               name="newpassword"
               id="newpassword"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter your password"
-            />
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
+            /> */}
+            <br />
+            <label htmlFor="favoritegen" className="block text-sm font-medium text-gray-700">
+              Favorite Genres
             </label>
-            <input
-              name="email"
-              id="email"
-              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              placeholder="Enter your email"
-            />
+            <label htmlFor="favoritegen" className="block text-sm font-medium text-gray-500">
+              Select your favorite game and anime genres
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {genresdata.map((genre) => (
+                <button
+                  key={genre.id}
+                  type="button"
+                  onClick={() => togglegen(genre)}
+                  className={`px-4 py-1 rounded-full transition ${selectgen.find((g) => g.id === genre.id)
+                    ? 'bg-purple-500 text-white'
+                    : 'bg-gray-100 hover:bg-purple-500 hover:text-white'
+                    }`}
+                >
+                  {genre.gen_name}
+                </button>
+
+              ))}
+              <input
+                type="hidden"
+                name="genres"
+                value={JSON.stringify(selectgen.map(g => g.id))}
+              />
+            </div>
             <button
               type="submit"
               className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition"
             >
-              Save
+              Save Changes
             </button>
           </div>
           <div>

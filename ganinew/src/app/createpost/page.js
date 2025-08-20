@@ -53,7 +53,17 @@ export const createpost = () => {
                             placeholder="Enter post title"
                             required />
                     </div>
-
+                    <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                            Description
+                        </label>
+                        <input
+                            name="description"
+                            id="description"
+                            className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                            placeholder="Enter post description"
+                            required />
+                    </div>
                     <div>
                         <label htmlFor="category" className="block text-sm font-medium text-gray-700">
                             Category
@@ -86,7 +96,7 @@ export const createpost = () => {
                                     onClick={() => togglegen(genre)}
                                     className={`px-4 py-1 rounded-full transition ${selectgen.find((g) => g.id === genre.id)
                                         ? 'bg-purple-500 text-white'
-                                        : 'bg-white hover:bg-purple-500 hover:text-white'
+                                        : 'bg-gray-100 hover:bg-purple-500 hover:text-white'
                                         }`}
                                 >
                                     {genre.gen_name}
