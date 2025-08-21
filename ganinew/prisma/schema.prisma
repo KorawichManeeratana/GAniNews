@@ -85,9 +85,11 @@ model Comment {
   id      Int    @id @default(autoincrement())
   post_id Int
   detail  String
+  reply   String?
 
   post Posts @relation(fields: [post_id], references: [id])
 }
+
 
 model Notification {
   id        Int      @id @default(autoincrement())

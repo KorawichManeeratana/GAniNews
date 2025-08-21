@@ -50,7 +50,7 @@ export default function Editprofile() {
                 className={`w-32 mt-2 rounded-lg shadow-md object-cover ${thumbnail ? "" : "opacity-100"}`}
               />
             </div>
-            <ImageUpload onUpload={(link) => setThumbnail(link)} required />
+            <ImageUpload onUpload={(link) => setThumbnail(link)}  />
             <input
               type="hidden"
               name="image"
@@ -66,7 +66,7 @@ export default function Editprofile() {
               id="name"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter your name..."
-            required/>
+            />
 
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email
@@ -76,7 +76,7 @@ export default function Editprofile() {
               id="email"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter your new email..."
-            required/>
+            />
 
             <label htmlFor="location" className="block text-sm font-medium text-gray-700">
               Location
@@ -86,7 +86,7 @@ export default function Editprofile() {
               id="location"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter your location..."
-            required/>
+            />
 
             <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
               Bio
@@ -97,7 +97,7 @@ export default function Editprofile() {
               rows={4}
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Tell us about yourself..."
-            required/>
+            />
 
             {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">
               Password
