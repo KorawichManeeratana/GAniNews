@@ -19,7 +19,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient()
 export async function GET(){
-    const postdata = await prisma.Posts.findMany()
+    const postdata = await prisma.comment.findMany() //select * from Posts
     return Response.json(postdata)
 }
 export async function POST(request){

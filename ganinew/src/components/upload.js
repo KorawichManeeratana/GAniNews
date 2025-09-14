@@ -61,13 +61,13 @@ export default function ImageUpload({ onUpload }) {
             />
             {filename && (
                 <div className="flex items-center gap-4">
-                    <p>อัปโหลดแล้ว: {filename}</p>
+                    <p>Uploaded: {filename}</p>
                     <button
                         type="button"
                         onClick={handleCancel}
                         className="text-red-500 hover:underline text-sm"
                     >
-                        ยกเลิก
+                        Cancel
                     </button>
                 </div>
             )}

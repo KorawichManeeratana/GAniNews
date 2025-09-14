@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Heart, Reply, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -6,42 +6,42 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-const mockComments = [
-  {
-    id: "1",
-    author: "GameMaster42",
-    content: "This looks absolutely incredible! The graphics have come so far.",
-    timestamp: "2 hours ago",
-    likes: 12,
-    isLiked: false,
-    replies: [
-      {
-        id: "1-1",
-        author: "PixelPro",
-        content: "Totally agree! The lighting effects are mind-blowing.",
-        timestamp: "1 hour ago",
-        likes: 3,
-        isLiked: true,
-      }
-    ]
-  },
-  {
-    id: "2",
-    author: "AnimeOtaku2024",
-    content: "Can't wait for the release! Been following this development for years.",
-    timestamp: "4 hours ago",
-    likes: 8,
-    isLiked: false,
-  },
-  {
-    id: "3",
-    author: "RPGLover",
-    content: "The character customization options shown in the trailer look amazing. Hope there's good voice acting too!",
-    timestamp: "6 hours ago",
-    likes: 15,
-    isLiked: true,
-  }
-];
+// const mockComments = [
+//   {
+//     id: "1",
+//     author: "GameMaster42",
+//     content: "This looks absolutely incredible! The graphics have come so far.",
+//     timestamp: "2 hours ago",
+//     likes: 12,
+//     isLiked: false,
+//     replies: [
+//       {
+//         id: "1-1",
+//         author: "PixelPro",
+//         content: "Totally agree! The lighting effects are mind-blowing.",
+//         timestamp: "1 hour ago",
+//         likes: 3,
+//         isLiked: true,
+//       }
+//     ]
+//   },
+//   {
+//     id: "2",
+//     author: "AnimeOtaku2024",
+//     content: "Can't wait for the release! Been following this development for years.",
+//     timestamp: "4 hours ago",
+//     likes: 8,
+//     isLiked: false,
+//   },
+//   {
+//     id: "3",
+//     author: "RPGLover",
+//     content: "The character customization options shown in the trailer look amazing. Hope there's good voice acting too!",
+//     timestamp: "6 hours ago",
+//     likes: 15,
+//     isLiked: true,
+//   }
+// ];
 
 const CommentItem = ({ comment, isReply = false }) => {
   const [likes, setLikes] = useState(comment.likes);
@@ -151,9 +151,21 @@ const CommentItem = ({ comment, isReply = false }) => {
 };
 
 export const CommentSection = () => {
+  
   const [newComment, setNewComment] = useState("");
-  const [comments, setComments] = useState(mockComments);
-
+  const [comments, setComments] = useState([]);
+  useEffect(() => {
+          const fetchdata = async () => {
+              try {
+                  const res = await fetch('/api/comment')
+                  const data = await res.json()
+                  setComments(data)
+              } catch (err) {
+                  console.log("Error is : ", err)
+              }
+          }
+          fetchdata()
+      }, [])
   const handleSubmitComment = () => {
     if (newComment.trim()) {
       const comment = {
@@ -195,8 +207,8 @@ export const CommentSection = () => {
 
         {/* Comments List */}
         <div className="space-y-6">
-          {comments.map((comment) => (
-            <CommentItem key={comment.id} comment={comment} />
+          {comments.map((i) => (
+            <CommentItem key={i.id} comment={i} />
           ))}
         </div>
       </div>

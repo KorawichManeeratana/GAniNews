@@ -2,26 +2,30 @@
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 const prisma = new PrismaClient()
-export default async function createPost(formData) {
+export default async function updatePost(formData) {
+    const postId = Number(formData.get('postid'));
     const title = formData.get('title')
     const category = formData.get('category')
     const content = formData.get('content')
     const genresform = formData.get('genres')
     const description = formData.get('description')
     const images = formData.get('image')
-    let genres = [];
+    let rawgenres = [];
     try {
-        genres = JSON.parse(genresform);
+        rawgenres = JSON.parse(genresform);
     } catch {
-        genres = [];
+        rawgenres = [];
     }
+    let genres = [...new Set(rawgenres)]
     try {
-        const insertdata = await prisma.Posts.create({
+        await prisma.Posts.update({
+            where : {
+                id:postId
+            },
             data: {
                 title: title,
                 body: content,
                 category: category,
-                user_id: 1,
                 description : description,
                 image : images
             },
@@ -30,27 +34,23 @@ export default async function createPost(formData) {
             }
 
         })
+        await prisma.genrespost.deleteMany({
+            where: { post_id: postId }
+        })
+
         if (genres.length > 0) {
             await Promise.all(
                 genres.map(genid =>
                     prisma.genrespost.create({
                         data: {
                             gen_id: Number(genid),
-                            post_id: insertdata.id
+                            post_id: postId
                         }
                     })
                 )
             )
         }
-        await prisma.notification.create({
-            data:{
-                title : title,
-                content : description,
-                url_post : `/newsDetail/${insertdata.id}`,
-                post_id: insertdata.id
-            }
-        })
-        redirect("/")
+        redirect("/admin/managepost")
     } catch (err) {
         if (err.digest?.startsWith("NEXT_REDIRECT")) {
             throw err;
