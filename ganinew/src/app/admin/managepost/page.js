@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Scripts } from "react-router-dom";
 import Link from "next/link";
 import deletepost from "./action";
-export default function Page() {
+export default function ManagePage() {
   const [news, setNews] = useState([])
   useEffect(() => {
     const fetchdata = async () => {
@@ -56,6 +56,7 @@ export default function Page() {
                 <td className="px-6 py-4 text-gray-800">{post.created_at}</td>
                 <td className="px-6 py-4 text-center">
                   <div className="flex justify-center gap-3">
+                    <Link href={`/newsDetail/${post.id}`} className="inline-block min-w-[80px] min-h-[30px] text-center rounded-md px-4 py-2 bg-green-400 hover:bg-green-500 hover:text-white transition">View Post</Link>
                     <Link href={`/admin/editpost/${post.id}`} className="inline-block min-w-[80px] min-h-[30px] text-center rounded-md px-4 py-2 bg-amber-400 hover:bg-amber-500 hover:text-white transition">Edit</Link>
                     <form action={deletepost}>
                       <input type="hidden" name="postid" value={post.id} />

@@ -21,9 +21,11 @@ model Users {
   created_at DateTime @default(now())
   email      String
 
-  posts Posts[]
+  posts    Posts[]
+  reports  Reports[]
   userinfo UserInfo?
 }
+
 model UserInfo {
   id       Int     @id @default(autoincrement())
   bio      String?
@@ -32,9 +34,10 @@ model UserInfo {
   photo    String?
   user_id  Int     @unique
 
-  user Users @relation(fields: [user_id], references: [id])
+  user    Users     @relation(fields: [user_id], references: [id])
   usergen UserGen[]
 }
+
 model UserGen {
   userinfo_id Int
   gen_id      Int
@@ -46,28 +49,29 @@ model UserGen {
 }
 
 model Posts {
-  id         Int      @id @default(autoincrement())
-  title      String
-  body       String
-  user_id    Int
-  status     String  @default("Available")
-  created_at DateTime @default(now())
-  likes       Int @default(0)
-  category   String
-  description String @default("NULL")
-  image String @default("https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png")
+  id          Int      @id @default(autoincrement())
+  title       String
+  body        String
+  user_id     Int
+  status      String   @default("Available")
+  created_at  DateTime @default(now())
+  likes       Int      @default(0)
+  category    String
+  description String   @default("NULL")
+  image       String   @default("https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png")
 
   user          Users          @relation(fields: [user_id], references: [id])
   comments      Comment[]
   notifications Notification[]
   genres        genrespost[]
+  reports       Reports[]
 }
 
 model Genres {
   id       Int    @id @default(autoincrement())
   gen_name String
 
-  posts genrespost[]
+  posts   genrespost[]
   usergen UserGen[]
 }
 
@@ -82,14 +86,14 @@ model genrespost {
 }
 
 model Comment {
-  id      Int    @id @default(autoincrement())
+  id      Int     @id @default(autoincrement())
   post_id Int
   detail  String
   reply   String?
 
-  post Posts @relation(fields: [post_id], references: [id])
+  post    Posts    @relation(fields: [post_id], references: [id])
+  reports Reports[]
 }
-
 
 model Notification {
   id        Int      @id @default(autoincrement())
@@ -100,4 +104,19 @@ model Notification {
   post_id   Int
 
   post Posts @relation(fields: [post_id], references: [id])
+}
+
+model Reports {
+  id         Int      @id @default(autoincrement())
+  subject    String
+  detail     String?
+  from_user  Int
+  post_id    Int
+  comment_id Int?
+  create_at  DateTime @default(now())
+  status     String   @default("pending")
+
+  user    Users    @relation(fields: [from_user], references: [id])
+  post    Posts?   @relation(fields: [post_id], references: [id])
+  comment Comment? @relation(fields: [comment_id], references: [id])
 }

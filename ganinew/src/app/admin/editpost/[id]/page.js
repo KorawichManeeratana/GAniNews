@@ -69,7 +69,7 @@ export const Editpost = () => {
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="flex justify-center mb-6">
 
-                <Link href="/admin/managepost" className="inline-block min-w-[200px] text-center rounded-md px-4 py-2 font-semibold hover:bg-purple-500 hover:text-white transition">← Back to PostManage</Link>
+                <Link href="/admin" className="inline-block min-w-[200px] text-center rounded-md px-4 py-2 font-semibold hover:bg-purple-500 hover:text-white transition">← Back to PostManage</Link>
 
             </div>
             {post.map((i, index) => (

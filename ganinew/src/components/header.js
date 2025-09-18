@@ -13,7 +13,7 @@ export const Header = () => {
   const [showLogin, setShowLogin] = useState(false);
 
   const handleCreatePost = () => {
-    router.push('/createpost');
+    router.push('/admin');
   };
 
   return (
@@ -71,8 +71,7 @@ export const Header = () => {
               onClick={handleCreatePost}
               className="hidden md:flex items-center gap-2"
             >
-              <Plus className="h-4 w-4" />
-              Create Post
+              Manage Post
             </Button>
 
             {/* Mobile menu */}
