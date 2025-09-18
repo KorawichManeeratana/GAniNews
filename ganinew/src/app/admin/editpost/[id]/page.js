@@ -69,7 +69,7 @@ export const Editpost = () => {
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="flex justify-center mb-6">
 
-                <Link href="/admin" className="inline-block min-w-[200px] text-center rounded-md px-4 py-2 font-semibold hover:bg-purple-500 hover:text-white transition">← Back to PostManage</Link>
+                <Link href="/admin" className="inline-block min-w-[200px] text-center rounded-md px-4 py-2 font-semibold hover:bg-purple-500 hover:text-white transition">← Back to Admin Page</Link>
 
             </div>
             {post.map((i, index) => (
@@ -176,7 +176,7 @@ export const Editpost = () => {
                             )}
                             <button
                                 type="submit"
-                                className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition"
+                                className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition cursor-pointer"
                             >
                                 Save Change 
                             </button>

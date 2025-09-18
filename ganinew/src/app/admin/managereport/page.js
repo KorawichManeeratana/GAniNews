@@ -51,7 +51,7 @@ export default function ManageReport() {
                                                     <div className="flex justify-center items-center gap-2">
                                                         <form action={updatereport}>
                                                             <input type="hidden" name="report_id" value={i.id} />
-                                                            <button className="px-4 py-2 rounded-md bg-green-400 text-white font-medium shadow-sm hover:bg-green-600 transition">
+                                                            <button className="px-4 py-2 rounded-md bg-green-400 text-white font-medium shadow-sm hover:bg-green-600 transition cursor-pointer" >
                                                                 Confirm
                                                             </button>
 
@@ -59,7 +59,7 @@ export default function ManageReport() {
 
                                                         <form action={deletereport}>
                                                             <input type="hidden" name="report_id" value={i.id} />
-                                                            <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition">
+                                                            <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
                                                                 Delete
                                                             </button>
                                                         </form>
@@ -68,14 +68,14 @@ export default function ManageReport() {
                                             </>
                                         ) : (
                                             <>
-                                                <td className="border border-gray-300 px-6 py-3 text-center text-green-600">{i.status}</td>
+                                                <td className="border border-gray-300 px-6 py-3 text-center text-green-600 ">{i.status}</td>
                                                 <td className="border border-gray-300px-6 py-2 px-6">
                                                     <div className="flex justify-center items-center gap-2">
 
 
                                                         <form action={deletereport}>
                                                             <input type="hidden" name="report_id" value={i.id} />
-                                                            <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition">
+                                                            <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
                                                                 Delete
                                                             </button>
                                                         </form>

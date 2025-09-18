@@ -25,9 +25,9 @@ export const Header = () => {
             <div className="h-8 w-8 rounded-lg bg-violet-500 flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
             </div>
-            <h1 className="text-xl font-bold bg-violet-500 bg-clip-text text-transparent">
+            <a href="/homepage" className="text-xl font-bold bg-violet-500 bg-clip-text text-transparent">
               GAniNews
-            </h1>
+            </a>
           </div>
 
           {/* Search Bar - Hidden on mobile */}

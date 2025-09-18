@@ -50,7 +50,7 @@ export default async function createPost(formData) {
                 post_id: insertdata.id
             }
         })
-        redirect("/")
+        redirect("/admin")
     } catch (err) {
         if (err.digest?.startsWith("NEXT_REDIRECT")) {
             throw err;
