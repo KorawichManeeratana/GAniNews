@@ -7,34 +7,43 @@ import {
   Bookmark,
   Calendar,
   Tag,
+  Flag,
 } from "lucide-react";
 import { CommentSection } from "@/components/commentSec";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
-import React from "react"
+import { ReportModal }  from "@/components/reportModal";
+import React from "react";
 
 export default function Page({ params }) {
   const router = useRouter();
-  const id = React.use(params)
-  const [newsDetail, setNewsDetail] = useState([])
-  const [likes, setLikes] = useState(newsDetail?.likes || 0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  useEffect( () => {
-    if (!id) return
+  const id = React.use(params);
+  const [newsDetail, setNewsDetail] = useState([]);
+  const [newAddon, setNewAddon] = useState({
+    likes: newsDetail?.likes || 0,
+    isLiked: false,
+    isBookmarked: false,
+    isReportOpen: false,
+  });
+  var tags = [];
+  useEffect(() => {
+    if (!id) return;
 
     const fetchDetail = async () => {
-      const res = await fetch(`/api/oneNews?id=${id.id}`) // ส่ง id ไป API
-      const data = await res.json()
-      setNewsDetail(data)
-    }
+      const res = await fetch(`/api/oneNews?id=${id.id}`); // ส่ง id ไป API
+      const data = await res.json();
+      setNewsDetail(data);
+    };
 
-    fetchDetail()
-  }, [id.id])
+    fetchDetail();
+  }, [id.id]);
 
-  const tags = ["Action"]
+  if (newsDetail?.genres && newsDetail.genres.length > 0) {
+    const genreNames = newsDetail?.genres.map((item) => item.genre.gen_name);
+    tags = genreNames;
+  }
 
   function handleBackToHome() {
     router.push("/");
@@ -53,9 +62,50 @@ export default function Page({ params }) {
   }
 
   const handleLike = () => {
-    setIsLiked(likes);
-    setLikes((prev) => (isLiked ? prev - 1 : prev + 1));
+    setNewAddon((prev) => {
+      const isLiked = !prev.isLiked;
+      const likes = isLiked ? prev.likes + 1 : prev.likes - 1;
+      return { ...prev, isLiked, likes };
+    });
   };
+
+  const handleReport = () => {
+    setNewAddon((prev) => ({ ...prev, isReportOpen: true }));
+    console.log(newAddon.isReportOpen);
+  };
+
+  const handleReportChange = (open) => {
+    setNewAddon((prev) => ({ ...prev, isReportOpen: !!open }));
+  };
+
+  const handleBookmark = () => {
+    setNewAddon((prev) => ({ ...prev, isBookmarked: !prev.isBookmarked }));
+  };
+
+  const handleReportSubmit = async (payload) => {
+  try {
+    const res = await fetch("/api/CreateReport", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload) // payload = { postId, topics, detail }
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err?.error || "Failed to submit report");
+    }
+
+    const data = await res.json();
+    console.log("Report submitted successfully:", data);
+
+    return data;
+  } catch (err) {
+    console.error("Report submission failed:", err);
+    throw err;
+  }
+};
 
   const handleShare = () => {
     if (navigator.share) {
@@ -65,7 +115,6 @@ export default function Page({ params }) {
       });
     } else {
       navigator.clipboard.writeText(window.location.href);
-      // You could show a toast here
     }
   };
 
@@ -106,13 +155,13 @@ export default function Page({ params }) {
                 <Calendar className="h-4 w-4" />
                 <span>{newsDetail.created_at}</span>
               </div>
-              <span>By {newsDetail.user}</span>
+              <span>By {newsDetail.user?.username}</span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 mb-6">
-              {tags.slice(0, 2).map((tag) => (
+              {tags.map((tag) => (
                 <Badge key={tag} variant="secondary">
-                  <Tag className="h-3 w-3 mr-1" />
+                  <Tag className=" h-3 w-3 mr-1" />
                   {tag}
                 </Badge>
               ))}
@@ -123,12 +172,16 @@ export default function Page({ params }) {
               <Button
                 variant="outline"
                 onClick={handleLike}
-                className={isLiked ? "text-red-500 border-red-500" : ""}
+                className={
+                  newAddon.isLiked ? "text-red-500 border-red-500" : ""
+                }
               >
                 <Heart
-                  className={`h-4 w-4 mr-2 ${isLiked ? "fill-current" : ""}`}
+                  className={`h-4 w-4 mr-2 ${
+                    newAddon.isLiked ? "fill-current" : ""
+                  }`}
                 />
-                {likes}
+                {newAddon.isLiked}
               </Button>
 
               <Button variant="outline" onClick={handleShare}>
@@ -138,15 +191,22 @@ export default function Page({ params }) {
 
               <Button
                 variant="outline"
-                onClick={() => setIsBookmarked(!isBookmarked)}
-                className={isBookmarked ? "text-primary border-primary" : ""}
+                onClick={() => handleBookmark}
+                className={
+                  newAddon.isBookmarked ? "text-primary border-primary" : ""
+                }
               >
                 <Bookmark
                   className={`h-4 w-4 mr-2 ${
-                    isBookmarked ? "fill-current" : ""
+                    newAddon.isBookmarked ? "fill-current" : ""
                   }`}
                 />
-                {isBookmarked ? "Saved" : "Save"}
+                {newAddon.isBookmarked ? "Saved" : "Save"}
+              </Button>
+
+              <Button variant="outline" onClick={() => handleReport()}>
+                <Flag className="h-4 w-4 mr-2" />
+                Report
               </Button>
             </div>
           </header>
@@ -164,6 +224,12 @@ export default function Page({ params }) {
           {/* Comments Section */}
           <CommentSection />
         </article>
+        <ReportModal
+          postId={newsDetail.id}
+          open={newAddon.isReportOpen}
+          onOpenChange={handleReportChange}
+          onSubmit={handleReportSubmit}
+        />
       </main>
     </div>
   );
