@@ -1,28 +1,35 @@
 "use client";
 import { Header } from "/src/components/header";
-import { useEffect, useState } from "react"
+import { useEffect, useState } from "react";
 import { Search, Clock, Star, TrendingUp } from "lucide-react";
 import { Filterrow } from "@/components/filterrow";
-import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { NewsCard } from "@/components/newsCard";
 
-
 export const Page = (params) => {
-  const [selected, setSelected] = useState("All");
+  /*  const [selected, setSelected] = useState("All"); */
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const [filteredNews, setFilteredNews] = useState([]);
   const [activeFilter, setActiveFilter] = useState("trending");
 
   useEffect(() => {
     const fetchPosts = async () => {
-      const res = await fetch("/api/news")
-      const data = await res.json()
-      setFilteredNews(data)
-    }
-    fetchPosts()
-  }, [])
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/news");
+        const data = await res.json();
 
+        setFilteredNews(data);
+      } catch (error) {
+        console.error("Error fetching news:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
 
   const handleFiltersChange = (filters) => {
     let filtered = [...filteredNews];
@@ -32,7 +39,9 @@ export const Page = (params) => {
       filtered = filtered.filter(
         (news) =>
           news.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-          news.description.toLowerCase().includes(filters.search.toLowerCase()) ||
+          news.description
+            .toLowerCase()
+            .includes(filters.search.toLowerCase()) ||
           news.tags.some((tag) =>
             tag.toLowerCase().includes(filters.search.toLowerCase())
           )
@@ -56,9 +65,9 @@ export const Page = (params) => {
     setFilteredNews(filtered);
   };
 
-  function handleNewsClick(newsId){
-    router.push(`/newsDetail/${newsId}`)
-  };
+  function handleNewsClick(newsId) {
+    router.push(`/newsDetail/${newsId}`);
+  }
 
   const filterButtons = [
     { id: "trending", label: "Trending", icon: TrendingUp },
@@ -66,11 +75,9 @@ export const Page = (params) => {
     { id: "popular", label: "Popular", icon: Star },
   ];
 
-
   const tabs = ["All", "Games", "Anime"];
   return (
     <div className="min-h-screen bg-background">
-
       <section className="relative py-20 px-4 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center object-cover"
@@ -105,7 +112,7 @@ export const Page = (params) => {
         </div>
 
         {/* Filter Tabs */}
-          <div className="mb-6">
+        <div className="mb-6">
           <div className="flex gap-2">
             {filterButtons.map((filter) => (
               <Button
@@ -123,24 +130,38 @@ export const Page = (params) => {
         </div>
 
         {/* News Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredNews.map((news) => (
-            <NewsCard
-              key={news.id}
-              {...news}
-              onClick={() => handleNewsClick(news.id)}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            {/* สมมติว่าไฟล์ GIF อยู่ที่ public/cat_loading.gif */}
+            <img
+              src="images/cat_loading.gif"
+              alt="Loading..."
+              className="w-40 h-40 object-contain"
+              aria-live="polite"
             />
-          ))}
-        </div>
-
-        {filteredNews.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground">
-              No news found matching your filters.
-            </p>
           </div>
-        )}
+        ) : (
+          <>
+            {/* News Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredNews.map((newsItem) => (
+                <NewsCard
+                  key={newsItem.id}
+                  {...newsItem}
+                  onClick={() => handleNewsClick(newsItem.id)}
+                />
+              ))}
+            </div>
 
+            {filteredNews.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">
+                  No news found matching your filters.
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </main>
     </div>
   );

@@ -24,6 +24,7 @@ model Users {
   posts    Posts[]
   reports  Reports[]
   userinfo UserInfo?
+  likes    Likes[]
 }
 
 model UserInfo {
@@ -65,6 +66,7 @@ model Posts {
   notifications Notification[]
   genres        genrespost[]
   reports       Reports[]
+  likesPost     Likes[]
 }
 
 model Genres {
@@ -119,4 +121,13 @@ model Reports {
   user    Users    @relation(fields: [from_user], references: [id])
   post    Posts?   @relation(fields: [post_id], references: [id])
   comment Comment? @relation(fields: [comment_id], references: [id])
+}
+
+model Likes {
+  id        Int  @id @default(autoincrement())
+  whoLikes  Int
+  post_id   Int
+
+  user    Users    @relation(fields: [whoLikes], references: [id])
+  post    Posts   @relation(fields: [post_id], references: [id])
 }
