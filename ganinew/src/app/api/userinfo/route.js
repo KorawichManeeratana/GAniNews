@@ -7,7 +7,15 @@ export async function GET(){
             user_id : 1
         },
         include: {
-            user:true,
+            user:{
+                include:{
+                    bookmark : {
+                        include :{
+                            post:true
+                        }
+                    }
+                }
+            },
             usergen :{
                 include :{
                     genre:true
@@ -15,7 +23,7 @@ export async function GET(){
             } 
         }
     })
-    return Response.json(userinfo)
+    return NextResponse.json(userinfo)
 }
 // export async function POST(request){
 //     const body = await request.json();

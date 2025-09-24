@@ -21,9 +21,11 @@ model Users {
   created_at DateTime @default(now())
   email      String
 
+  comment Comment[]
   posts    Posts[]
   reports  Reports[]
   userinfo UserInfo?
+  bookmark Bookmark[]
 }
 
 model UserInfo {
@@ -65,6 +67,7 @@ model Posts {
   notifications Notification[]
   genres        genrespost[]
   reports       Reports[]
+  bookmark Bookmark[]
 }
 
 model Genres {
@@ -90,7 +93,9 @@ model Comment {
   post_id Int
   detail  String
   reply   String?
+  user_id Int
 
+  user    Users    @relation(fields: [user_id], references: [id])
   post    Posts    @relation(fields: [post_id], references: [id])
   reports Reports[]
 }
@@ -119,4 +124,13 @@ model Reports {
   user    Users    @relation(fields: [from_user], references: [id])
   post    Posts?   @relation(fields: [post_id], references: [id])
   comment Comment? @relation(fields: [comment_id], references: [id])
+}
+
+model Bookmark{
+  id Int @id @default(autoincrement())
+  user_id Int
+  post_id Int 
+
+  user   Users    @relation(fields: [user_id], references: [id])
+  post   Posts?   @relation(fields: [post_id], references: [id])
 }

@@ -1,11 +1,11 @@
 'use client'
 import { useState, useEffect } from 'react'
-
+import Link from 'next/link'
+import { deletebookmark } from './action'
+import { Pen } from 'lucide-react'
 export default function profile() {
     const [userinfo, setUserinfo] = useState([])
-    const [user, setUser] = useState([])
-    const [gendata, setGenresdata] = useState([])
-
+    const [expand, setExpand] = useState(false)
     useEffect(() => {
         const fetchdata = async () => {
             try {
@@ -18,6 +18,14 @@ export default function profile() {
         }
         fetchdata()
     }, [])
+
+    const expandedit = () => {
+        if (expand) {
+            setExpand(false)
+        } else {
+            setExpand(true)
+        }
+    }
 
     console.log("userinfo: ", userinfo)
 
@@ -40,7 +48,7 @@ export default function profile() {
 
 
                         <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                            <img className='rounded-full' src={i.photo ? `${i.photo}` : "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}></img>
+                            <img className='rounded-full h-24' src={i.photo ? `${i.photo}` : "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}></img>
                         </div>
 
 
@@ -83,11 +91,11 @@ export default function profile() {
                         <div className="w-full">
                             <h3 className="text-sm font-medium text-gray-700 mb-2">Favorite Genres</h3>
                             <div className="flex flex-wrap gap-2">
-                                {i.usergen.map((j)=>(
-                                    <span   key={j.gen_id}  className="px-3 py-1 bg-gray-100 rounded-full text-sm">{j.genre.gen_name}</span>
+                                {i.usergen.map((j) => (
+                                    <span key={j.gen_id} className="px-3 py-1 bg-gray-100 rounded-full text-sm">{j.genre.gen_name}</span>
                                 ))}
-                           
-                                
+
+
                             </div>
                         </div>
                     </div>
@@ -98,7 +106,65 @@ export default function profile() {
                         <p className="text-gray-700 text-sm leading-relaxed whitespace-normal break-words">
                             {i.bio}
                         </p>
+                        <div className='flex items-center gap-2'>
+                            <h3 className='text-base font-semibold text-gray-900'>My Book Mark</h3>
+                            <a
+                                onClick={expandedit}
+                                className="ml-auto flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-lg hover:shadow-xl transition transform hover:scale-110 cursor-pointer select-none"
+                            >
+                                <Pen className="w-4 h-4" />
+                            </a>
+                        </div>
+
+
+                        <div className='flex flex-nowrap gap-5 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-2'>
+                            {i.user.bookmark.map((j, inx) => (
+                                <div
+                                    key={inx}
+                                    className="bg-white shadow-lg hover:shadow-xl transition rounded-xl flex-shrink-0 min-w-[230px] max-w-[250px] overflow-hidden border border-gray-200"
+                                >
+                                    <img
+                                        className="rounded-3xl h-70 w-full object-cover p-2"
+                                        src={j.post.image ? `${j.post.image}` : "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
+                                    />
+                                    <h2 className="text-base font-semibold mt-1 break-words truncate p-2">{j.post.title}</h2>
+                                    {
+                                        expand ? (
+                                            <div className="flex justify-center gap-2">
+
+
+                                                <form action={deletebookmark}>
+                                                    <input type="hidden" name="bookmark_id" value={j.id} />
+                                                    <button
+                                                        className="w-full py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 
+                                                            text-white font-medium shadow-md hover:shadow-lg 
+                                                            transition-transform transform hover:scale-105 cursor-pointer p-2"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        ) : (
+                                            <div>
+                                                <Link
+                                                    href={`/newsDetail/${j.post.id}`}
+                                                    className="w-full inline-block text-center py-2 
+                                                            bg-gradient-to-r from-violet-500 to-indigo-500 
+                                                            text-white font-medium shadow-md hover:shadow-lg 
+                                                            transition-transform transform hover:scale-105 cursor-pointer"
+                                                >
+                                                    View News
+                                                </Link>
+                                            </div>
+                                        )
+                                    }
+
+                                </div>
+                            ))}
+                        </div>
+
                     </div>
+
                 </div>
             ))}
         </div>

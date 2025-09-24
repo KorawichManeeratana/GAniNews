@@ -9,6 +9,12 @@ export default function Editprofile() {
   const [thumbnail, setThumbnail] = useState('')
   const [selectgen, setSelectgen] = useState([])
   const [genresdata, setGenresdata] = useState([])
+  const [form, setForm] = useState({
+    name : '',
+    email : '',
+    location : '',
+    bio : ''
+  })
   const togglegen = (genre) => {
     if (selectgen.includes(genre)) {
       setSelectgen(prevItems => prevItems.filter(item => item !== genre));
@@ -28,7 +34,26 @@ export default function Editprofile() {
         console.log("Error is : ", err)
       }
     }
+    const fetchuserdata = async () => {
+      try {
+        const res = await fetch('/api/userinfo')
+        const data = await res.json()
+        setThumbnail(data[0].photo)
+        setForm({
+          name: data[0].name || '',
+          email: data[0].user.email || '',
+          location: data[0].location || '',
+          bio: data[0].bio || ''
+        })
+        console.log("thumnail : ", thumbnail)
+      } catch (err) {
+        console.log("Error is : ", err)
+      }
+    }
+    fetchuserdata()
     fetchdata()
+
+
   }, [])
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -41,16 +66,15 @@ export default function Editprofile() {
         <form action={createProfile} className="grid-flow-col space-y-4">
           <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-6">
             <h1 className="text-2xl font-bold text-purple-500">
-              Edit Profile
-            </h1>
+              Edit Profile   </h1>
             <div className="flex justify-center">
               <img
                 src={thumbnail ? thumbnail : "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
                 alt="preview"
-                className={`w-32 mt-2 rounded-lg shadow-md object-cover ${thumbnail ? "" : "opacity-100"}`}
+                className={`w-52 h-50 mt-2 rounded-full shadow-md object-cover ${thumbnail ? "" : "opacity-100"}`}
               />
             </div>
-            <ImageUpload onUpload={(link) => setThumbnail(link)}  />
+            <ImageUpload onUpload={(link) => setThumbnail(link)} />
             <input
               type="hidden"
               name="image"
@@ -59,13 +83,14 @@ export default function Editprofile() {
           </div>
           <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8 space-y-2">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Name
+              Name 
             </label>
             <input
               name="name"
               id="name"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter your name..."
+              defaultValue={form.name ? form.name : ""}
             />
 
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -76,6 +101,7 @@ export default function Editprofile() {
               id="email"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter your new email..."
+              defaultValue={form.email ? form.email : ""}
             />
 
             <label htmlFor="location" className="block text-sm font-medium text-gray-700">
@@ -86,6 +112,7 @@ export default function Editprofile() {
               id="location"
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Enter your location..."
+              defaultValue={form.location ? form.location : ""}
             />
 
             <label htmlFor="bio" className="block text-sm font-medium text-gray-700">
@@ -97,26 +124,8 @@ export default function Editprofile() {
               rows={4}
               className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               placeholder="Tell us about yourself..."
+              defaultValue={form.bio ? form.bio : ""}
             />
-
-            {/* <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              name="password"
-              id="password"
-              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              placeholder="Enter your password"
-            />
-            <label htmlFor="newpassword" className="block text-sm font-medium text-gray-700">
-              Password
-            </label> */
-            /* <input
-              name="newpassword"
-              id="newpassword"
-              className="mt-1 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-              placeholder="Enter your password"
-            /> */}
             <br />
             <label htmlFor="favoritegen" className="block text-sm font-medium text-gray-700">
               Favorite Genres

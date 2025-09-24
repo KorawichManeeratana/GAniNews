@@ -162,7 +162,7 @@ export default function Page({ params }) {
           <Separator className="mb-8" />
 
           {/* Comments Section */}
-          <CommentSection />
+          <CommentSection id={id.id}/>
         </article>
       </main>
     </div>

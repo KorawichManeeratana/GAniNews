@@ -1,4 +1,4 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Heart, Reply, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -63,36 +63,48 @@ const CommentItem = ({ comment, isReply = false }) => {
   };
 
   return (
+
     <div
-      className={`space-y-3 ${
-        isReply ? "ml-8 border-l-2 border-border pl-4" : ""
-      }`}
+      className={`space-y-3 ${isReply ? "ml-8 border-l-2 border-border pl-4" : ""
+        }`}
     >
+
       <div className="flex gap-3">
-        <Avatar className="h-8 w-8">
-          <AvatarImage src={comment.avatar} />
-          <AvatarFallback className="text-xs">
-            {comment.author.slice(0, 2).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        {
+          comment.user.userinfo.photo ? (
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={comment.user.userinfo.photo} />
+              <AvatarFallback className="text-xs">
+                {/* {comment.author.slice(0, 2).toUpperCase()} */}
+              </AvatarFallback>
+            </Avatar>
+          ) : (
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" />
+              <AvatarFallback className="text-xs">
+                {/* {comment.author.slice(0, 2).toUpperCase()} */}
+              </AvatarFallback>
+            </Avatar>
+          )
+        }
+
 
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-sm">{comment.author}</span>
-            <span className="text-xs text-muted-foreground">
+            <span className="font-medium text-sm">{comment.user.username}</span>
+            {/* <span className="text-xs text-muted-foreground">
               {comment.timestamp}
-            </span>
+            </span> */}
           </div>
 
-          <p className="text-sm text-foreground">{comment.content}</p>
+          <p className="text-sm text-foreground">{comment.detail}</p>
 
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               size="sm"
-              className={`h-auto p-1 ${
-                isLiked ? "text-red-500" : "text-muted-foreground"
-              }`}
+              className={`h-auto p-1 ${isLiked ? "text-red-500" : "text-muted-foreground"
+                }`}
               onClick={handleLike}
             >
               <Heart
@@ -139,40 +151,39 @@ const CommentItem = ({ comment, isReply = false }) => {
         </div>
       </div>
 
-      {comment.replies && comment.replies.length > 0 && (
+      {/* {comment.replies && comment.replies.length > 0 && (
         <div className="space-y-3">
           {comment.replies.map((reply) => (
             <CommentItem key={reply.id} comment={reply} isReply />
           ))}
         </div>
-      )}
+      )} */}
     </div>
   );
 };
 
-export const CommentSection = () => {
-  
+export const CommentSection = ({ id }) => {
+  const postid = id
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState([]);
   useEffect(() => {
-          const fetchdata = async () => {
-              try {
-                  const res = await fetch('/api/comment')
-                  const data = await res.json()
-                  setComments(data)
-              } catch (err) {
-                  console.log("Error is : ", err)
-              }
-          }
-          fetchdata()
-      }, [])
+    const fetchdata = async () => {
+      try {
+        const res = await fetch(`/api/comment/${postid}`)
+        const data = await res.json()
+        setComments(data)
+      } catch (err) {
+        console.log("Error is : ", err)
+      }
+    }
+    fetchdata()
+  }, [])
   const handleSubmitComment = () => {
     if (newComment.trim()) {
       const comment = {
         id: Date.now().toString(),
         author: "CurrentUser",
         content: newComment,
-        timestamp: "now",
         likes: 0,
         isLiked: false,
       };
@@ -180,9 +191,14 @@ export const CommentSection = () => {
       setNewComment("");
     }
   };
-
+  const checkdata = () => {
+    comments.map((i) => {
+      console.log(i.user.username)
+    })
+  }
   return (
     <Card className="p-6">
+      <button onClick={checkdata} >jjjjj</button>
       <div className="space-y-6">
         <h3 className="text-lg font-semibold">
           Comments ({comments.length})
@@ -207,8 +223,10 @@ export const CommentSection = () => {
 
         {/* Comments List */}
         <div className="space-y-6">
-          {comments.map((i) => (
-            <CommentItem key={i.id} comment={i} />
+          {comments.map((i, index) => (
+            <div key={index}>
+              <CommentItem key={i.id} comment={i} />
+            </div>
           ))}
         </div>
       </div>

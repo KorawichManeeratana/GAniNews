@@ -17,7 +17,7 @@ export default function Page() {
     }, [])
     return (
     <div>
-        {commment.map((i) => <>{i.detail} {i.id} </>)}
+        {commment.map((i) => <div key={i.id}>{i.detail} {i.user_id} </div>)}
     </div>
     )
 }
