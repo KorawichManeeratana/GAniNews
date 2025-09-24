@@ -26,6 +26,8 @@ model Users {
   reports  Reports[]
   userinfo UserInfo?
   bookmark Bookmark[]
+  likes    Likes[]
+
 }
 
 model UserInfo {
@@ -68,6 +70,8 @@ model Posts {
   genres        genrespost[]
   reports       Reports[]
   bookmark Bookmark[]
+  likesPost     Likes[]
+
 }
 
 model Genres {
@@ -126,6 +130,7 @@ model Reports {
   comment Comment? @relation(fields: [comment_id], references: [id])
 }
 
+
 model Bookmark{
   id Int @id @default(autoincrement())
   user_id Int
@@ -134,3 +139,13 @@ model Bookmark{
   user   Users    @relation(fields: [user_id], references: [id])
   post   Posts?   @relation(fields: [post_id], references: [id])
 }
+
+model Likes {
+  id        Int  @id @default(autoincrement())
+  whoLikes  Int
+  post_id   Int
+
+  user    Users    @relation(fields: [whoLikes], references: [id])
+  post    Posts   @relation(fields: [post_id], references: [id])
+}
+
