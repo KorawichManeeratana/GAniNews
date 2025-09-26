@@ -13,7 +13,10 @@ export const Page = (params) => {
   const router = useRouter();
   const [filteredNews, setFilteredNews] = useState([]);
   const [activeFilter, setActiveFilter] = useState("trending");
+  const [allNews, setAllNews] = useState([]);
 
+  console.log("activeFilter:", activeFilter);
+  
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -22,6 +25,8 @@ export const Page = (params) => {
         const data = await res.json();
 
         setFilteredNews(data);
+        setAllNews(data);
+
       } catch (error) {
         console.error("Error fetching news:", error);
       } finally {
@@ -32,8 +37,7 @@ export const Page = (params) => {
   }, []);
 
   const handleFiltersChange = (filters) => {
-    let filtered = [...filteredNews];
-
+    let filtered = [...allNews];
     // Search filter
     if (filters.search) {
       filtered = filtered.filter(
@@ -42,8 +46,8 @@ export const Page = (params) => {
           news.description
             .toLowerCase()
             .includes(filters.search.toLowerCase()) ||
-          news.tags.some((tag) =>
-            tag.toLowerCase().includes(filters.search.toLowerCase())
+          news.genres.some((tag) =>
+            tag.genre.gen_name.toLowerCase().includes(filters.search.toLowerCase())
           )
       );
     }
@@ -58,24 +62,40 @@ export const Page = (params) => {
     // Genre filter
     if (filters.genres.length > 0) {
       filtered = filtered.filter((news) =>
-        filters.genres.some((genre) => news.tags.includes(genre))
+        filters.genres.some((genre) => news.genres.map((tag) => tag.genre.gen_name).includes(genre))
       );
     }
 
     setFilteredNews(filtered);
   };
 
+  const handleActiveFileChange = (filter) => {
+    setActiveFilter(filter);
+
+    let filtered = [...allNews];
+
+    if (filter === "recent") {
+
+      filtered = filtered.sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+
+    } else if (filter === "popular") {
+      filtered = filtered.filter((news) => news.likes >= 0).sort((a, b) => b.likes - a.likes);
+    }
+
+    setFilteredNews(filtered);
+  }
+
   function handleNewsClick(newsId) {
     router.push(`/newsDetail/${newsId}`);
   }
 
   const filterButtons = [
-    { id: "trending", label: "Trending", icon: TrendingUp },
-    { id: "recent", label: "Recent", icon: Clock },
     { id: "popular", label: "Popular", icon: Star },
+    { id: "recent", label: "Recent", icon: Clock },
   ];
 
-  const tabs = ["All", "Games", "Anime"];
   return (
     <div className="min-h-screen bg-background">
       <section className="relative py-20 px-4 overflow-hidden">
@@ -119,7 +139,7 @@ export const Page = (params) => {
                 key={filter.id}
                 variant={activeFilter === filter.id ? "default" : "outline"}
                 size="sm"
-                onClick={() => setActiveFilter(filter.id)}
+                onClick={() => handleActiveFileChange(filter.id)}
                 className="flex items-center gap-2"
               >
                 <filter.icon className="h-4 w-4" />

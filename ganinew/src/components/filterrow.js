@@ -54,7 +54,7 @@ export const Filterrow = ({ onFiltersChange }) => {
     if (onFiltersChange) {
       onFiltersChange({
         search: searchQuery,
-        category: selectedCategory,
+        category: category,
         genres: selectedGenres,
       });
     }
@@ -68,7 +68,7 @@ export const Filterrow = ({ onFiltersChange }) => {
       onFiltersChange({
         search: searchQuery,
         category: selectedCategory,
-        genres: selectedGenres,
+        genres: newGenres,
       });
     };
   };

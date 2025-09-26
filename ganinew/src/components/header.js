@@ -30,37 +30,7 @@ export const Header = () => {
             </a>
           </div>
 
-          {/* Search Bar - Hidden on mobile */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search games, anime..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-2 w-full rounded-2xl border border-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500"
-              />
-            </div>
-          </div>
-
-          
-
-          {/* Mobile Search */}
-          <div className="md:hidden mt-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search games, anime..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          
+          <></>
 
           {/* user-menu */}
           <div className="flex items-center space-x-2">
