@@ -93,16 +93,20 @@ model genrespost {
 }
 
 model Comment {
-  id      Int     @id @default(autoincrement())
-  post_id Int
-  detail  String
-  reply   String?
-  user_id Int
+  id        Int       @id @default(autoincrement())
+  post_id   Int
+  detail    String
+  user_id   Int       @default(1)
+  parent_id Int?
 
-  user    Users    @relation(fields: [user_id], references: [id])
-  post    Posts    @relation(fields: [post_id], references: [id])
-  reports Reports[]
+  user      Users     @relation(fields: [user_id], references: [id])
+  post      Posts     @relation(fields: [post_id], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parent_id], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+
+  reports   Reports[]
 }
+
 
 model Notification {
   id        Int      @id @default(autoincrement())
