@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient()
-export async function GET(){
+import prisma from "@/lib/prisma";
+import { jwtVerify, createRemoteJWKSet } from "jose";
+
+export async function GET(req){
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    console.log(id)
     const userinfo = await prisma.userInfo.findMany({
         where :{
-            user_id : 1
+            user_id : parseInt(id)
         },
         include: {
             user:true,
