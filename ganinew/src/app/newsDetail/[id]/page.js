@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   ArrowLeft,
   Heart,
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
-import { ReportModal }  from "@/components/reportModal";
+import { ReportModal } from "@/components/reportModal";
 import React from "react";
 
 export default function Page({ params }) {
@@ -28,13 +28,22 @@ export default function Page({ params }) {
     isReportOpen: false,
   });
   var tags = [];
+
+  const timerRef = useRef(null);
+  const pendingRequestRef = useRef(null);
+
   useEffect(() => {
     if (!id) return;
 
     const fetchDetail = async () => {
-      const res = await fetch(`/api/oneNews?id=${id.id}`); // ส่ง id ไป API
+      const res = await fetch(`/api/oneNews?id=${id.id}`);
       const data = await res.json();
-      setNewsDetail(data);
+
+      setNewsDetail({
+        ...data,
+        isLiked: data.userHasLiked || false, // server ต้องส่งมาบอก user กดแล้วหรือไม่
+        likes: data.likes || 0, // server ต้องส่งจำนวน like
+      });
     };
 
     fetchDetail();
@@ -61,12 +70,31 @@ export default function Page({ params }) {
     );
   }
 
+  console.log("newsDetail", newsDetail);
+
   const handleLike = () => {
-    setNewAddon((prev) => {
+    if (!newsDetail) return;
+
+    setNewsDetail((prev) => {
       const isLiked = !prev.isLiked;
       const likes = isLiked ? prev.likes + 1 : prev.likes - 1;
+      console.log("likes", likes, isLiked);
       return { ...prev, isLiked, likes };
     });
+
+    // ตั้ง timer 3 วิเรียก API
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(async () => {
+      await fetch("/api/post/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: newsDetail.id,
+          isLiked: !newsDetail.isLiked, // หรือ prev.isLiked
+        }),
+      });
+      timerRef.current = null;
+    }, 3000);
   };
 
   const handleReport = () => {
@@ -83,29 +111,29 @@ export default function Page({ params }) {
   };
 
   const handleReportSubmit = async (payload) => {
-  try {
-    const res = await fetch("/api/CreateReport", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload) // payload = { postId, topics, detail }
-    });
+    try {
+      const res = await fetch("/api/CreateReport", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload), // payload = { postId, topics, detail }
+      });
 
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err?.error || "Failed to submit report");
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.error || "Failed to submit report");
+      }
+
+      const data = await res.json();
+      console.log("Report submitted successfully:", data);
+
+      return data;
+    } catch (err) {
+      console.error("Report submission failed:", err);
+      throw err;
     }
-
-    const data = await res.json();
-    console.log("Report submitted successfully:", data);
-
-    return data;
-  } catch (err) {
-    console.error("Report submission failed:", err);
-    throw err;
-  }
-};
+  };
 
   const handleShare = () => {
     if (navigator.share) {
@@ -172,16 +200,18 @@ export default function Page({ params }) {
               <Button
                 variant="outline"
                 onClick={handleLike}
-                className={
-                  newAddon.isLiked ? "text-red-500 border-red-500" : ""
-                }
+                className={`flex items-center ${
+                  newAddon.isLiked
+                    ? "text-red-500 border-red-500 !important"
+                    : ""
+                }`}
               >
                 <Heart
-                  className={`h-4 w-4 mr-2 ${
-                    newAddon.isLiked ? "fill-current" : ""
+                  className={`h-4 w-4 mr-2 fill-current ${
+                    newAddon.isLiked ? "text-red-500" : "text-gray-500"
                   }`}
                 />
-                {newAddon.isLiked}
+                {newAddon.likes}
               </Button>
 
               <Button variant="outline" onClick={handleShare}>

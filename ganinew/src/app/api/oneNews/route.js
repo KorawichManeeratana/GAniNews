@@ -8,9 +8,10 @@ const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well
 const JWKS = createRemoteJWKSet(new URL(jwksUrl));
 
 export async function GET(req) {
-  const cookieStore = require("next/headers").cookies();
+  const cookieStore = await require("next/headers").cookies();
   const idTokenCookie = cookieStore.get("id_token");
   const idToken = idTokenCookie?.value;
+
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
 
@@ -20,11 +21,12 @@ export async function GET(req) {
     });
 
   try {
-    const news = await prisma.posts.findUnique({
+    var news = await prisma.posts.findUnique({
       where: { id: parseInt(id) },
       include: {
         comments: true,
         user: true,
+        likesPost: true,
         genres: {
           include: {
             genre: true, //field นี้ตรงกับ model genrespost
@@ -32,12 +34,16 @@ export async function GET(req) {
         },
       },
     });
+    console.log("news", news);
 
     if (payload){
-      const withuser = {
-        news: news,
-        userSub: payload.sub,
+      if (payload.sub in news.likesPost.map(like => like.whoLikes)){
+        news = {...news, userHasLiked: true}
+      } else {
+        news = {...news, userHasLiked: false}
       }
+
+      const withuser = {...news, usersub : payload.sub};
       return NextResponse.json(withuser);
       }
     else{
