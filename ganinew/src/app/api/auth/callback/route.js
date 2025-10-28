@@ -145,7 +145,7 @@ export async function GET(req) {
     if (refresh_token) {
       res.cookies.set("refresh_token", refresh_token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "development",
+        secure: process.env.NODE_ENV,
         sameSite: "lax",
         path: "/api",
         maxAge: tokenJson.expires_in || 30 * 24 * 60 * 60, //30 วัน
@@ -154,9 +154,16 @@ export async function GET(req) {
 
     res.cookies.set("id_token", id_token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "development",
+      secure: process.env.NODE_ENV,
       path: "/",
       sameSite: "lax",
+    });
+
+    res.cookies.set("access_token", access_token, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV,
+      path: "/",
     });
 
     // ลบ oauth_state/nonce cookie ที่ไม่จำเป็นแล้ว

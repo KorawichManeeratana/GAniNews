@@ -34,7 +34,6 @@ export async function GET(req) {
         },
       },
     });
-    console.log("news", news);
 
     if (payload){
       if (payload.sub in news.likesPost.map(like => like.whoLikes)){

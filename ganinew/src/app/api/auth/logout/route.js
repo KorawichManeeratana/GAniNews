@@ -7,7 +7,7 @@ export async function POST() {
 
     response.cookies.set("id_token", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "development",
+      secure: process.env.NODE_ENV,
       sameSite: "lax",
       path: "/",
       expires: new Date(0), // หมดอายุทันที
@@ -15,7 +15,7 @@ export async function POST() {
 
     response.cookies.set("refresh_token", "", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "development",
+      secure: process.env.NODE_ENV,
       sameSite: "lax",
       path: "/",
       expires: new Date(0),

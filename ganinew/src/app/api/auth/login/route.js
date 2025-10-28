@@ -77,7 +77,7 @@ export async function POST(req) {
       { status: 200 }
     );
     
-    const isProd = process.env.NODE_ENV === "development";
+    const isProd = process.env.NODE_ENV;
 
     if (RefreshToken) {
     res.cookies.set("refresh_token", RefreshToken, {
@@ -97,7 +97,13 @@ export async function POST(req) {
       maxAge: ExpiresIn,
     });
 
-    
+    res.cookies.set("access_token", AccessToken, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProd,
+      path: "/",
+      maxAge: ExpiresIn,
+    });
 
     return res;
   } catch (err) {

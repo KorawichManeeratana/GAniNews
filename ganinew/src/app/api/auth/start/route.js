@@ -27,7 +27,7 @@ export async function GET() {
     const res = NextResponse.redirect(redirectUrl);
 
     // เซ็ต state/nonce เป็น HttpOnly cookie เพื่อให้ตรวจตอน callback
-    const isProd = process.env.NODE_ENV === "development";
+    const isProd = process.env.NODE_ENV ;
     res.cookies.set("oauth_state", state, { httpOnly: true, secure: isProd, path: "/", sameSite: "lax" });
     res.cookies.set("oauth_nonce", nonce, { httpOnly: true, secure: isProd, path: "/", sameSite: "lax" });
 
