@@ -15,7 +15,6 @@ export const Page = (params) => {
   const [activeFilter, setActiveFilter] = useState("trending");
   const [allNews, setAllNews] = useState([]);
 
-  console.log("activeFilter:", activeFilter);
   
   useEffect(() => {
     const fetchPosts = async () => {
