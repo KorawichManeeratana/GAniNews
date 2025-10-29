@@ -146,6 +146,7 @@ export const CommentSection = ({ id }) => {
   const fetchComments = async () => {
     try {
       const res = await fetch(`/api/comment/${postId}`);
+      
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data = await res.json();
       setComments(Array.isArray(data) ? data : []);

@@ -62,9 +62,7 @@ export const Editpost = () => {
         fetchpostdata()
         fetchgenresdata()
     }, [])
-    if (loading) {
-        return <p className="text-center text-gray-500">Loading post data...</p>;
-    }
+
     return (
         <div className="min-h-screen bg-gray-100 p-6">
             <div className="flex justify-center mb-6">
@@ -167,13 +165,6 @@ export const Editpost = () => {
                             />
                         </div>
                         <div className="flex flex-col items-center">
-                            {thumbnail && (
-                                <img
-                                    src={thumbnail}
-                                    alt="preview"
-                                    className="w-32 mt-2 rounded-lg shadow-md object-cover"
-                                />
-                            )}
                             <button
                                 type="submit"
                                 className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition cursor-pointer"

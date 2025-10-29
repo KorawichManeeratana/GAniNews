@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
@@ -17,9 +19,10 @@ export async function GET(req) {
         created_at: "desc",  // เรียงตามวันล่าสุด
       },
     })
-    return NextResponse.json(posts)
+
+    return NextResponse.json(posts);
   } catch (err) {
-    console.error("Error", err)
-    return NextResponse.json({ error: err.message }, { status: 500 })
+    console.error("Error", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

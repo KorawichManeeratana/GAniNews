@@ -1,11 +1,10 @@
 'use client'
-import Script from "next/script"
 import { useEffect, useState } from "react"
-import { Scripts } from "react-router-dom"
-import Link from "next/link"
 import { deletereport, updatereport } from "./action";
+
 export default function ManageReport() {
     const [reports, setReports] = useState([])
+
     useEffect(() => {
         const fetchdata = async () => {
             try {
@@ -18,8 +17,6 @@ export default function ManageReport() {
         }
         fetchdata()
     }, [])
-
-
 
     return (
         <div className="p-6">
@@ -34,71 +31,60 @@ export default function ManageReport() {
                         <th className="border border-gray-300 px-6 py-3 text-center">Action</th>
                     </tr>
                 </thead>
-                {
-                    reports ? (
+
+                <tbody className="divide-y divide-gray-200">
+                    {reports.length > 0 ? (
                         reports.map((i, index) => (
-                            <tbody key={index} className="divide-y divide-gray-200">
-                                <tr>
-                                    <td className="border border-gray-300 px-6 py-3 ">{i.subject}</td>
-                                    <td className="border border-gray-300 px-6 py-3 text-center">{i.from_user}</td>
-                                    <td className="border border-gray-300 px-6 py-3 ">{i.detail}</td>
-                                    <td className="border border-gray-300 px-6 py-3 text-center">{i.create_at}</td>
-                                    {
-                                        i.status == "pending" ? (
-                                            <>
-                                                <td className="border border-gray-300 px-6 py-3 text-center text-red-500">{i.status}</td>
-                                                <td className="border border-gray-300px-6 py-2 px-6">
-                                                    <div className="flex justify-center items-center gap-2">
-                                                        <form action={updatereport}>
-                                                            <input type="hidden" name="report_id" value={i.id} />
-                                                            <button className="px-4 py-2 rounded-md bg-green-400 text-white font-medium shadow-sm hover:bg-green-600 transition cursor-pointer" >
-                                                                Confirm
-                                                            </button>
+                            <tr key={index}>
+                                <td className="border border-gray-300 px-6 py-3 ">{i.subject}</td>
+                                <td className="border border-gray-300 px-6 py-3 text-center">{i.from_user}</td>
+                                <td className="border border-gray-300 px-6 py-3 ">{i.detail}</td>
+                                <td className="border border-gray-300 px-6 py-3 text-center">{i.create_at}</td>
 
-                                                        </form>
+                                {i.status === "pending" ? (
+                                    <>
+                                        <td className="border border-gray-300 px-6 py-3 text-center text-red-500">{i.status}</td>
+                                        <td className="border border-gray-300 px-6 py-3 text-center">
+                                            <div className="flex justify-center items-center gap-2">
+                                                <form action={updatereport}>
+                                                    <input type="hidden" name="report_id" value={i.id} />
+                                                    <button className="px-4 py-2 rounded-md bg-green-400 text-white font-medium shadow-sm hover:bg-green-600 transition cursor-pointer">
+                                                        Confirm
+                                                    </button>
+                                                </form>
 
-                                                        <form action={deletereport}>
-                                                            <input type="hidden" name="report_id" value={i.id} />
-                                                            <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
-                                                                Delete
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </td>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <td className="border border-gray-300 px-6 py-3 text-center text-green-600 ">{i.status}</td>
-                                                <td className="border border-gray-300px-6 py-2 px-6">
-                                                    <div className="flex justify-center items-center gap-2">
-
-
-                                                        <form action={deletereport}>
-                                                            <input type="hidden" name="report_id" value={i.id} />
-                                                            <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
-                                                                Delete
-                                                            </button>
-                                                        </form>
-                                                    </div>
-                                                </td>
-                                            </>
-                                        )
-                                    }
-
-
-
-                                </tr>
-                            </tbody>
+                                                <form action={deletereport}>
+                                                    <input type="hidden" name="report_id" value={i.id} />
+                                                    <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
+                                                        Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td className="border border-gray-300 px-6 py-3 text-center text-green-600">{i.status}</td>
+                                        <td className="border border-gray-300 px-6 py-3 text-center">
+                                            <form action={deletereport}>
+                                                <input type="hidden" name="report_id" value={i.id} />
+                                                <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
+                                                    Delete
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </>
+                                )}
+                            </tr>
                         ))
-
                     ) : (
-                        <div>
-                            <h1>No Report</h1>
-                        </div>
-                    )
-
-                }
-
+                        <tr>
+                            <td colSpan="6" className="text-center py-6 text-gray-500 italic">
+                                No report data
+                            </td>
+                        </tr>
+                    )}
+                </tbody>
             </table>
         </div>
     );

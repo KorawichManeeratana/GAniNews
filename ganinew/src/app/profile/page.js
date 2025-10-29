@@ -33,7 +33,7 @@ export default function profile() {
         <div className="bg-gray-50 min-h-screen flex flex-col items-center py-8">
 
             <div className="w-full max-w-5xl mb-6 px-4">
-                <a href="#" className="text-gray-600 hover:text-gray-900 text-sm flex items-center gap-1">
+                <a href="/" className="text-gray-600 hover:text-gray-900 text-sm flex items-center gap-1">
                     ← Back to Home
                 </a>
             </div>
@@ -118,27 +118,26 @@ export default function profile() {
 
 
                         <div className='flex flex-nowrap gap-5 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 py-2'>
-                            {i.user.bookmark.map((j, inx) => (
-                                <div
-                                    key={inx}
-                                    className="bg-white shadow-lg hover:shadow-xl transition rounded-xl flex-shrink-0 min-w-[230px] max-w-[250px] overflow-hidden border border-gray-200"
-                                >
-                                    <img
-                                        className="rounded-3xl h-70 w-full object-cover p-2"
-                                        src={j.post.image ? `${j.post.image}` : "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
-                                    />
-                                    <h2 className="text-base font-semibold mt-1 break-words truncate p-2">{j.post.title}</h2>
-                                    {
-                                        expand ? (
+                            {i.user.bookmark.length > 0 ? (
+                                i.user.bookmark.map((j, inx) => (
+                                    <div
+                                        key={inx}
+                                        className="bg-white shadow-lg hover:shadow-xl transition rounded-xl flex-shrink-0 min-w-[230px] max-w-[250px] overflow-hidden border border-gray-200"
+                                    >
+                                        <img
+                                            className="rounded-3xl h-70 w-full object-cover p-2"
+                                            src={j.post.image ? `${j.post.image}` : "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png"}
+                                        />
+                                        <h2 className="text-base font-semibold mt-1 break-words truncate p-2">{j.post.title}</h2>
+
+                                        {expand ? (
                                             <div className="flex justify-center gap-2">
-
-
                                                 <form action={deletebookmark}>
                                                     <input type="hidden" name="bookmark_id" value={j.id} />
                                                     <button
                                                         className="w-full py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 
-                                                            text-white font-medium shadow-md hover:shadow-lg 
-                                                            transition-transform transform hover:scale-105 cursor-pointer p-2"
+                                    text-white font-medium shadow-md hover:shadow-lg 
+                                    transition-transform transform hover:scale-105 cursor-pointer p-2"
                                                     >
                                                         Remove
                                                     </button>
@@ -149,19 +148,23 @@ export default function profile() {
                                                 <Link
                                                     href={`/newsDetail/${j.post.id}`}
                                                     className="w-full inline-block text-center py-2 
-                                                            bg-gradient-to-r from-violet-500 to-indigo-500 
-                                                            text-white font-medium shadow-md hover:shadow-lg 
-                                                            transition-transform transform hover:scale-105 cursor-pointer"
+                                bg-gradient-to-r from-violet-500 to-indigo-500 
+                                text-white font-medium shadow-md hover:shadow-lg 
+                                transition-transform transform hover:scale-105 cursor-pointer"
                                                 >
                                                     View News
                                                 </Link>
                                             </div>
-                                        )
-                                    }
-
+                                        )}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="flex items-center justify-center w-full text-gray-500 italic mt-6">
+                                    Add your favorite news 
                                 </div>
-                            ))}
+                            )}
                         </div>
+
 
                     </div>
 

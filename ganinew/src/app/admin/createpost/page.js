@@ -110,7 +110,7 @@ export const createpost = () => {
                             />
                         </div>
                     </div>
-                    <div>
+                    <div className="min-h-[350px]">
                         <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
                             Thumbnail Image
                         </label>
@@ -122,13 +122,6 @@ export const createpost = () => {
                         />
                     </div>
                     <div className="flex flex-col items-center">
-                        {thumbnail && (
-                            <img
-                                src={thumbnail}
-                                alt="preview"
-                                className="w-32 mt-2 rounded-lg shadow-md object-cover"
-                            />
-                        )}
                         <button
                             type="submit"
                             className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition cursor-pointer"
