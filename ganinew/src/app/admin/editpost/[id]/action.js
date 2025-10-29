@@ -13,7 +13,7 @@ export default async function updatePost(formData) {
     const content = formData.get("content");
     const genresform = formData.get("genres");
     const description = formData.get("description");
-    const file = formData.get("file"); // ตัวไฟล์จาก form
+    const file = formData.get("file");
 
     let rawgenres = [];
     try {
@@ -31,7 +31,6 @@ export default async function updatePost(formData) {
 
         let fileUrl = oldPost?.image;
 
-        // ลบรูปเก่า ถ้ามีไฟล์ใหม่
         if (file && oldPost?.image) {
             const h = await headers();
             const host = h.get("host");
@@ -50,7 +49,6 @@ export default async function updatePost(formData) {
             }
         }
 
-        // อัปโหลดไฟล์ใหม่
         if (file) {
             const uploadForm = new FormData();
             uploadForm.append("file", file);
@@ -74,7 +72,6 @@ export default async function updatePost(formData) {
             }
         }
 
-        // อัปเดตโพสต์ใน DB
         await prisma.posts.update({
             where: { id: postId },
             data: {
@@ -86,7 +83,6 @@ export default async function updatePost(formData) {
             },
         });
 
-        // อัปเดต genres
         await prisma.genrespost.deleteMany({ where: { post_id: postId } });
         if (genres.length > 0) {
             await Promise.all(

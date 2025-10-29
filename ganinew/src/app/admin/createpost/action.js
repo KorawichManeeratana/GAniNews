@@ -25,7 +25,6 @@ export default async function createPost(formData) {
     audience: process.env.AWS_APP_CLIENT_ID,
   });
 
-  // ตรวจสอบ token_use
   if (payload.token_use !== "id") {
     return NextResponse.json({ message: "Invalid token use" }, { status: 401 });
   }
