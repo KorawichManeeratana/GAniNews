@@ -15,8 +15,8 @@ datasource db {
 
 model Users {
   id         Int      @id @default(autoincrement())
+  cognitoSub String   @unique @db.Uuid
   username   String
-  password   String
   role       String
   created_at DateTime @default(now())
   email      String
@@ -56,7 +56,7 @@ model Posts {
   id          Int      @id @default(autoincrement())
   title       String
   body        String
-  user_id     Int
+  publisher_sub String   @db.Uuid
   status      String   @default("Available")
   created_at  DateTime @default(now())
   likes       Int      @default(0)
@@ -64,7 +64,7 @@ model Posts {
   description String   @default("NULL")
   image       String   @default("https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png")
 
-  user          Users          @relation(fields: [user_id], references: [id])
+  user          Users          @relation(fields: [publisher_sub], references: [cognitoSub])
   comments      Comment[]
   notifications Notification[]
   genres        genrespost[]
@@ -146,10 +146,10 @@ model Bookmark{
 
 model Likes {
   id        Int  @id @default(autoincrement())
-  whoLikes  Int
+  whoLikes  String   @db.Uuid
   post_id   Int
 
-  user    Users    @relation(fields: [whoLikes], references: [id])
+  user    Users    @relation(fields: [whoLikes], references: [cognitoSub])
   post    Posts   @relation(fields: [post_id], references: [id])
 }
 

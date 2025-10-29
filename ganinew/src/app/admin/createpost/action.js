@@ -1,20 +1,43 @@
-'use server'
+"use server";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
+import { jwtVerify, createRemoteJWKSet } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
+const prisma = new PrismaClient();
+const region = process.env.AWS_REGION;
+const userPoolId = process.env.AWS_USER_POOL_ID;
+const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
+const JWKS = createRemoteJWKSet(new URL(jwksUrl));
 
-const prisma = new PrismaClient()
 
 export default async function createPost(formData) {
-    const title = formData.get('title')
-    const category = formData.get('category')
-    const content = formData.get('content')
-    const genresform = formData.get('genres')
-    const description = formData.get('description')
-    let genres = [];
+  const cookieStore = await require("next/headers").cookies();
+  const idTokenCookie = cookieStore.get("id_token");
+  const idToken = idTokenCookie?.value;
 
-    const file = formData.get("file"); 
+  if (!idToken) {
+    return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
+  }
+
+  const { payload } = await jwtVerify(idToken, JWKS, {
+    issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
+    audience: process.env.AWS_APP_CLIENT_ID,
+  });
+
+  // ตรวจสอบ token_use
+  if (payload.token_use !== "id") {
+    return NextResponse.json({ message: "Invalid token use" }, { status: 401 });
+  }
+
+  const title = formData.get("title");
+  const category = formData.get("category");
+  const content = formData.get("content");
+  const genresform = formData.get("genres");
+  const description = formData.get("description");
+  const images = formData.get("image");
+  let genres = [];
+  const file = formData.get("file"); 
     let fileUrl = null;
 
     if (file) {
@@ -41,11 +64,8 @@ export default async function createPost(formData) {
         }
     }
 
-    try {
-        genres = JSON.parse(genresform);
-    } catch {
-        genres = [];
-    }
+    genres = genresform ? JSON.parse(genresform) : [];
+
 
     try {
         const insertdata = await prisma.Posts.create({
@@ -93,4 +113,5 @@ export default async function createPost(formData) {
         console.error(err);
         throw new Error("Someting Wrong!");
     }
+
 }
