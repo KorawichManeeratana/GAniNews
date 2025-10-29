@@ -5,7 +5,15 @@ import Editors from "@/components/editor";
 import ImageUpload from "@/components/upload";
 import Link from "next/link";
 import createProfile from "./action"
-export default function Editprofile() {
+import React from "react";
+import Loading from "@/app/loading";
+import { useRouter } from "next/navigation";
+
+export default function Editprofile({params}) {
+  const id = React.use(params);
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false)
   const [thumbnail, setThumbnail] = useState('')
   const [selectgen, setSelectgen] = useState([])
   const [genresdata, setGenresdata] = useState([])
@@ -36,15 +44,21 @@ export default function Editprofile() {
     }
     const fetchuserdata = async () => {
       try {
-        const res = await fetch('/api/userinfo')
+        const res = await fetch(`/api/userinfo?id=${id.id}`)
         const data = await res.json()
-        setThumbnail(data[0].photo)
+        console.log("data ----->",data.userinfo.photo)
+        setThumbnail(data.userinfo.photo)
         setForm({
-          name: data[0].name || '',
-          email: data[0].user.email || '',
-          location: data[0].location || '',
-          bio: data[0].bio || ''
+          name: data.userinfo.name || '',
+          email: data.userinfo.user.email || '',
+          location: data.userinfo.location || '',
+          bio: data.userinfo.bio || ''
         })
+        if (!data.isOwner) {
+          // ถ้าไม่ใช่เจ้าของ profile ให้ redirect
+          router.push('/');
+          return;
+        }
         console.log("thumnail : ", thumbnail)
       } catch (err) {
         console.log("Error is : ", err)
@@ -57,6 +71,11 @@ export default function Editprofile() {
   }, [])
   return (
     <div className="min-h-screen bg-gray-100 p-6">
+      {
+        loading?(<Loading/>):(
+        <></>)
+      }
+      
       <div className="flex justify-center mb-6">
 
         <Link href="/homepage" className="inline-block min-w-[200px] text-center rounded-md px-4 py-2 font-semibold hover:bg-purple-500 hover:text-white transition">← Back to HomePage</Link>
@@ -156,6 +175,7 @@ export default function Editprofile() {
             </div>
             <button
               type="submit"
+
               className="mt-6 w-full bg-purple-500 text-white py-2 px-4 rounded-md shadow hover:bg-purple-400 transition"
             >
               Save Changes

@@ -152,4 +152,3 @@ model Likes {
   user    Users    @relation(fields: [whoLikes], references: [cognitoSub])
   post    Posts   @relation(fields: [post_id], references: [id])
 }
-
