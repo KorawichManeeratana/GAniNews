@@ -34,9 +34,9 @@ export async function GET(req) {
         },
       },
     });
-
+    
     if (payload){
-      if (payload.sub in news.likesPost.map(like => like.whoLikes)){
+      if (news.likesPost.some(like => like.whoLikes === payload.sub)){
         news = {...news, userHasLiked: true}
       } else {
         news = {...news, userHasLiked: false}

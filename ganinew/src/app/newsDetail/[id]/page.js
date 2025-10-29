@@ -22,7 +22,7 @@ export default function Page({ params }) {
   const id = React.use(params);
   const [newsDetail, setNewsDetail] = useState([]);
   const [newAddon, setNewAddon] = useState({
-    likes: newsDetail?.likes || 0,
+    likes: 0,
     isLiked: false,
     isBookmarked: false,
     isReportOpen: false,
@@ -32,22 +32,22 @@ export default function Page({ params }) {
   const timerRef = useRef(null);
   const pendingRequestRef = useRef(null);
 
-  useEffect(() => {
-    if (!id) return;
+useEffect(() => {
+  if (!id) return;
 
-    const fetchDetail = async () => {
-      const res = await fetch(`/api/oneNews?id=${id.id}`);
-      const data = await res.json();
+  const fetchDetail = async () => {
+    const res = await fetch(`/api/oneNews?id=${id.id}`);
+    const data = await res.json();
 
-      setNewsDetail({
-        ...data,
-        isLiked: data.userHasLiked || false, // server ต้องส่งมาบอก user กดแล้วหรือไม่
-        likes: data.likes || 0, // server ต้องส่งจำนวน like
-      });
-    };
-
-    fetchDetail();
-  }, [id.id]);
+    setNewsDetail(data);
+    setNewAddon((prev) => ({
+      ...prev,
+      likes: data.likes || 0,
+      isLiked: data.userHasLiked || false,
+    }));
+  };
+  fetchDetail();
+}, [id.id]);
 
   if (newsDetail?.genres && newsDetail.genres.length > 0) {
     const genreNames = newsDetail?.genres.map((item) => item.genre.gen_name);
@@ -70,36 +70,29 @@ export default function Page({ params }) {
     );
   }
 
-  console.log("newsDetail", newsDetail);
-
   const handleLike = () => {
-    if (!newsDetail) return;
+  setNewAddon((prev) => {
+    const isLiked = !prev.isLiked;
+    const likes = isLiked ? prev.likes + 1 : prev.likes - 1;
+    return { ...prev, isLiked, likes };
+  });
 
-    setNewsDetail((prev) => {
-      const isLiked = !prev.isLiked;
-      const likes = isLiked ? prev.likes + 1 : prev.likes - 1;
-      console.log("likes", likes, isLiked);
-      return { ...prev, isLiked, likes };
+  if (timerRef.current) clearTimeout(timerRef.current);
+  timerRef.current = setTimeout(async () => {
+    await fetch("/api/post/like", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        postId: newsDetail.id,
+        isLiked: !newAddon.isLiked, // ใช้ค่าจาก state เก่าได้ถ้าต้อง
+      }),
     });
-
-    // ตั้ง timer 3 วิเรียก API
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(async () => {
-      await fetch("/api/post/like", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId: newsDetail.id,
-          isLiked: !newsDetail.isLiked, // หรือ prev.isLiked
-        }),
-      });
-      timerRef.current = null;
-    }, 3000);
-  };
+    timerRef.current = null;
+  }, 3000);
+};
 
   const handleReport = () => {
     setNewAddon((prev) => ({ ...prev, isReportOpen: true }));
-    console.log(newAddon.isReportOpen);
   };
 
   const handleReportChange = (open) => {
@@ -252,7 +245,7 @@ export default function Page({ params }) {
           <Separator className="mb-8" />
 
           {/* Comments Section */}
-          <CommentSection id={id.id}/>
+          <CommentSection id={id.id} />
         </article>
         <ReportModal
           postId={newsDetail.id}
