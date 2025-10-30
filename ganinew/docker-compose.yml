@@ -1,15 +1,31 @@
-version: "3.8"
+version: "3.9"
 
 services:
-  web:
-    build: .
-    container_name: ganinew-dev
-    restart: always
+  ganinew-app:
+    container_name: ganinew-app
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-      - /app/node_modules
-    command: npm run dev
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: ${DATABASE_URL}
+      AWS_REGION: ${AWS_REGION}
+      AWS_USER_POOL_ID: ${AWS_USER_POOL_ID}
+      AWS_APP_CLIENT_ID: ${AWS_APP_CLIENT_ID}
+      AWS_APP_CLIENT_SECRET: ${AWS_APP_CLIENT_SECRET}
+      COGNITO_DOMAIN: ${COGNITO_DOMAIN}
+      NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL}
+      S3_BUCKET_NAME: ${S3_BUCKET_NAME}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN}
+    networks:
+      - ganinew_network
+    restart: always
+    command: npm run start
+
+networks:
+  ganinew_network:
+    driver: bridge
