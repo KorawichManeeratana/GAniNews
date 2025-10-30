@@ -15,6 +15,9 @@ export default async function updatePost(formData) {
     const description = formData.get("description");
     const file = formData.get("file");
 
+    console.log("file ;::: ",file)
+    console.log("file ;::: ",file.size)
+    console.log("file ;::: ",file.name)
     let rawgenres = [];
     try {
         rawgenres = JSON.parse(genresform);
@@ -31,7 +34,7 @@ export default async function updatePost(formData) {
 
         let fileUrl = oldPost?.image;
 
-        if (file && oldPost?.image) {
+        if (file && file.size !== 0 && file.name !== "undefined" && oldPost?.image) {
             const h = await headers();
             const host = h.get("host");
             const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
@@ -49,7 +52,7 @@ export default async function updatePost(formData) {
             }
         }
 
-        if (file) {
+        if (file && file.size !== 0 && file.name !== "undefined") {
             const uploadForm = new FormData();
             uploadForm.append("file", file);
 
@@ -71,17 +74,29 @@ export default async function updatePost(formData) {
                 return NextResponse.json({ error: "File upload failed" }, { status: 400 });
             }
         }
-
-        await prisma.posts.update({
+        if (file && file.size !== 0 && file.name !== "undefined"){
+                await prisma.posts.update({
+                where: { id: postId },
+                data: {
+                    title,
+                    body: content,
+                    category,
+                    description,
+                    image: fileUrl,
+                },
+            });
+        }else{
+            await prisma.posts.update({
             where: { id: postId },
             data: {
                 title,
                 body: content,
                 category,
-                description,
-                image: fileUrl,
+                description
             },
         });
+        }
+        
 
         await prisma.genrespost.deleteMany({ where: { post_id: postId } });
         if (genres.length > 0) {

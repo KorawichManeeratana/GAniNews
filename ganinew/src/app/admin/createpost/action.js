@@ -65,7 +65,6 @@ export default async function createPost(formData) {
 
     genres = genresform ? JSON.parse(genresform) : [];
 
-
     try {
         const insertdata = await prisma.Posts.create({
             data: {

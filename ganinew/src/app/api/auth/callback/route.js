@@ -28,13 +28,6 @@ export async function GET(req) {
       return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
     }
 
-    console.log("OAuth callback params:", {
-      code,
-      state,
-      error,
-      error_description,
-    });
-
     if (error === "access_denied") {
       console.log("User canceled login:", error_description);
 
