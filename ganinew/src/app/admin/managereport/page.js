@@ -1,91 +1,153 @@
-'use client'
-import { useEffect, useState } from "react"
+"use client";
+import { useEffect, useState } from "react";
 import { deletereport, updatereport } from "./action";
+import { useRouter } from "next/navigation";
+import Loading from "@/app/loading";
 
 export default function ManageReport() {
-    const [reports, setReports] = useState([])
+  const [reports, setReports] = useState([]);
+  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(null);
 
-    useEffect(() => {
-        const fetchdata = async () => {
-            try {
-                const res = await fetch('/api/reportsfromuser')
-                const data = await res.json()
-                setReports(data)
-            } catch (err) {
-                console.log("Error is : ", err)
-            }
+  useEffect(() => {
+    const fetchdata = async () => {
+      try {
+        const res = await fetch("/api/reportsfromuser");
+        const data = await res.json();
+        setReports(data);
+      } catch (err) {
+        console.log("Error is : ", err);
+      }
+    };
+    fetchdata();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/checkAdminUser");
+        if (res.status === 403) router.push("/");
+
+        if (res.ok) {
+          setIsAdmin(true);
         }
-        fetchdata()
-    }, [])
+      } catch (err) {
+        console.log("Error is:", err);
+      }
+    })();
+  }, []);
 
-    return (
-        <div className="p-6">
-            <table className="table-auto border-collapse border border-gray-300 w-full shadow-md rounded-lg overflow-hidden">
-                <thead>
-                    <tr className="bg-gray-100 text-gray-700 text-left">
-                        <th className="border border-gray-300 px-6 py-3 text-center">Subject</th>
-                        <th className="border border-gray-300 px-6 py-3 text-center">From User Id</th>
-                        <th className="border border-gray-300 px-6 py-3 text-center">Detail</th>
-                        <th className="border border-gray-300 px-6 py-3 text-center">CreateAt</th>
-                        <th className="border border-gray-300 px-6 py-3 text-center">Status</th>
-                        <th className="border border-gray-300 px-6 py-3 text-center">Action</th>
-                    </tr>
-                </thead>
+  if (isAdmin === null) return (<div> <Loading/> </div>);
 
-                <tbody className="divide-y divide-gray-200">
-                    {reports.length > 0 ? (
-                        reports.map((i, index) => (
-                            <tr key={index}>
-                                <td className="border border-gray-300 px-6 py-3 ">{i.subject}</td>
-                                <td className="border border-gray-300 px-6 py-3 text-center">{i.from_user}</td>
-                                <td className="border border-gray-300 px-6 py-3 ">{i.detail}</td>
-                                <td className="border border-gray-300 px-6 py-3 text-center">{i.create_at}</td>
+  return (
+    <div className="p-6">
+      {isAdmin ? (
+        <table className="table-auto border-collapse border border-gray-300 w-full shadow-md rounded-lg overflow-hidden">
+          <thead>
+            <tr className="bg-gray-100 text-gray-700 text-left">
+              <th className="border border-gray-300 px-6 py-3 text-center">
+                Subject
+              </th>
+              <th className="border border-gray-300 px-6 py-3 text-center">
+                From User Id
+              </th>
+              <th className="border border-gray-300 px-6 py-3 text-center">
+                Detail
+              </th>
+              <th className="border border-gray-300 px-6 py-3 text-center">
+                CreateAt
+              </th>
+              <th className="border border-gray-300 px-6 py-3 text-center">
+                Status
+              </th>
+              <th className="border border-gray-300 px-6 py-3 text-center">
+                Action
+              </th>
+            </tr>
+          </thead>
 
-                                {i.status === "pending" ? (
-                                    <>
-                                        <td className="border border-gray-300 px-6 py-3 text-center text-red-500">{i.status}</td>
-                                        <td className="border border-gray-300 px-6 py-3 text-center">
-                                            <div className="flex justify-center items-center gap-2">
-                                                <form action={updatereport}>
-                                                    <input type="hidden" name="report_id" value={i.id} />
-                                                    <button className="px-4 py-2 rounded-md bg-green-400 text-white font-medium shadow-sm hover:bg-green-600 transition cursor-pointer">
-                                                        Confirm
-                                                    </button>
-                                                </form>
+          <tbody className="divide-y divide-gray-200">
+            {reports.length > 0 ? (
+              reports.map((i, index) => (
+                <tr key={index}>
+                  <td className="border border-gray-300 px-6 py-3">
+                    {i.subject}
+                  </td>
+                  <td className="border border-gray-300 px-6 py-3 text-center">
+                    {i.from_user}
+                  </td>
+                  <td className="border border-gray-300 px-6 py-3">
+                    {i.detail}
+                  </td>
+                  <td className="border border-gray-300 px-6 py-3 text-center">
+                    {i.create_at}
+                  </td>
 
-                                                <form action={deletereport}>
-                                                    <input type="hidden" name="report_id" value={i.id} />
-                                                    <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
-                                                        Delete
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <td className="border border-gray-300 px-6 py-3 text-center text-green-600">{i.status}</td>
-                                        <td className="border border-gray-300 px-6 py-3 text-center">
-                                            <form action={deletereport}>
-                                                <input type="hidden" name="report_id" value={i.id} />
-                                                <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </>
-                                )}
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="6" className="text-center py-6 text-gray-500 italic">
-                                No report data
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                  {i.status === "pending" ? (
+                    <>
+                      <td className="border border-gray-300 px-6 py-3 text-center text-red-500">
+                        {i.status}
+                      </td>
+                      <td className="border border-gray-300 px-6 py-3 text-center">
+                        <div className="flex justify-center items-center gap-2">
+                          <form action={updatereport}>
+                            <input
+                              type="hidden"
+                              name="report_id"
+                              value={i.id}
+                            />
+                            <button className="px-4 py-2 rounded-md bg-green-400 text-white font-medium shadow-sm hover:bg-green-600 transition cursor-pointer">
+                              Confirm
+                            </button>
+                          </form>
+
+                          <form action={deletereport}>
+                            <input
+                              type="hidden"
+                              name="report_id"
+                              value={i.id}
+                            />
+                            <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
+                              Delete
+                            </button>
+                          </form>
+                        </div>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="border border-gray-300 px-6 py-3 text-center text-green-600">
+                        {i.status}
+                      </td>
+                      <td className="border border-gray-300 px-6 py-3 text-center">
+                        <form action={deletereport}>
+                          <input type="hidden" name="report_id" value={i.id} />
+                          <button className="px-4 py-2 rounded-md bg-red-500 text-white font-medium shadow-sm hover:bg-red-600 transition cursor-pointer">
+                            Delete
+                          </button>
+                        </form>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="text-center py-6 text-gray-500 italic"
+                >
+                  No report data
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      ) : (
+        <div className="text-center mt-10 text-red-500 font-bold text-2xl">
+          Access Denied. You are not admin user.
         </div>
-    );
+      )}
+    </div>
+  );
 }

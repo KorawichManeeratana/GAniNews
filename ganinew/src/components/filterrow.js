@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,24 +17,26 @@ import { Button } from "@/components/ui/button"
  * @param {{ onFiltersChange?: (filters: { search: string, category: string, genres: string[] }) => void }} props
  */
 
-const genres = [
-  "RPG",
-  "Fantasy",
-  "Horror",
-  "Adventure",
-  "Action",
-  "Romance",
-  "Comedy",
-  "Drama",
-  "Sci-Fi",
-  "Mystery",
-  "Slice of Life",
-];
 
 export const Filterrow = ({ onFiltersChange }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedGenres, setSelectedGenres] = useState([]); //เก็บ string
+  const [genresdata, setGenresdata] = useState([]);
+  
+  useEffect(() => {
+      const fetchdata = async () => {
+        try {
+          const res = await fetch("/api/genres");
+          const data = await res.json();
+          setGenresdata(data);
+        } catch (err) {
+          console.log("Error is : ", err);
+        }
+      };
+      fetchdata();
+    }, []);
+
 
   const handleSearchChange = (value) => {
     setSearchQuery(value);
@@ -131,13 +133,13 @@ export const Filterrow = ({ onFiltersChange }) => {
           >
             <DropdownMenuLabel>Select Genres</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {genres.map((genre) => (
+            {genresdata.map((genre) => (
               <DropdownMenuCheckboxItem
-                key={genre}
-                checked={selectedGenres.includes(genre)}
-                onCheckedChange={() => handleSelectedGenres(genre)}
+                key={genre.id}
+                checked={selectedGenres.includes(genre.gen_name)}
+                onCheckedChange={() => handleSelectedGenres(genre.gen_name)}
               >
-                {genre}
+                {genre.gen_name}
               </DropdownMenuCheckboxItem>
             ))}
             {selectedGenres.length > 0 && (

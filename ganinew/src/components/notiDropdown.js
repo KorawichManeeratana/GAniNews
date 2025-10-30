@@ -34,7 +34,7 @@ export const NotificationDropdown = () => {
   }, []);
 
   function timeAgo(dateString) {
-    const past = new Date(dateString.replace("Z", "+07:00"));
+    const past = new Date(dateString);
     const now = new Date();
 
     const diffMs = now - past;
@@ -51,7 +51,7 @@ export const NotificationDropdown = () => {
 
   const now = new Date();
   const recentNews = News.filter((newsItem) => {
-    const created = new Date(newsItem.create_at?.replace("Z", "+07:00"));
+    const created = new Date(newsItem.create_at);
     const diffHours = (now - created) / (1000 * 60 * 60); // หาความต่างเป็นชั่วโมง
     return diffHours <= 24;
   });

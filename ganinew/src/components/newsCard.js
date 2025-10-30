@@ -32,7 +32,7 @@ export const NewsCard = ({
 
   function timeAgo(dateString) {
     const now = new Date();
-    const past = new Date(dateString.replace("Z", "+07:00"));
+    const past = new Date(dateString);
     const diffMs = now - past; // ต่างกันเป็น milliseconds
     const diffSec = Math.floor(diffMs / 1000);
     const diffMin = Math.floor(diffSec / 60);
