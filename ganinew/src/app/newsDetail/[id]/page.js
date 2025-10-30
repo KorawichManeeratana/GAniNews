@@ -16,6 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { ReportModal } from "@/components/reportModal";
 import React from "react";
+import RequireLoginAlert from "@/components/requireLoginAlert";
 
 export default function Page({ params }) {
   const router = useRouter();
@@ -27,27 +28,32 @@ export default function Page({ params }) {
     isBookmarked: false,
     isReportOpen: false,
   });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
   var tags = [];
 
-  const timerRef = useRef(null);
+  const likeTimerRef = useRef(null);
+  const bookmarkTimerRef = useRef(null);
   const pendingRequestRef = useRef(null);
 
-useEffect(() => {
-  if (!id) return;
+  useEffect(() => {
+    if (!id) return;
 
-  const fetchDetail = async () => {
-    const res = await fetch(`/api/oneNews?id=${id.id}`);
-    const data = await res.json();
+    const fetchDetail = async () => {
+      const res = await fetch(`/api/news/oneNews?id=${id.id}`);
+      const data = await res.json();
 
-    setNewsDetail(data);
-    setNewAddon((prev) => ({
-      ...prev,
-      likes: data.likes || 0,
-      isLiked: data.userHasLiked || false,
-    }));
-  };
-  fetchDetail();
-}, [id.id]);
+      setNewsDetail(data);
+      setNewAddon((prev) => ({
+        ...prev,
+        likes: data.likes || 0,
+        isLiked: data.userHasLiked || false,
+        isBookmarked: data.userHasBookmarked || false,
+      }));
+      setIsLoggedIn(!!data.usersub);
+    };
+    fetchDetail();
+  }, [id.id]);
 
   if (newsDetail?.genres && newsDetail.genres.length > 0) {
     const genreNames = newsDetail?.genres.map((item) => item.genre.gen_name);
@@ -56,6 +62,14 @@ useEffect(() => {
 
   function handleBackToHome() {
     router.push("/");
+  }
+
+  function requireLogin(action) {
+    if (!isLoggedIn) {
+      setShowLoginAlert(true); // เปิด alert dialog
+      return;
+    }
+    action();
   }
 
   if (!newsDetail) {
@@ -71,25 +85,25 @@ useEffect(() => {
   }
 
   const handleLike = () => {
-  setNewAddon((prev) => {
-    const isLiked = !prev.isLiked;
-    const likes = isLiked ? prev.likes + 1 : prev.likes - 1;
-    return { ...prev, isLiked, likes };
-  });
-
-  if (timerRef.current) clearTimeout(timerRef.current);
-  timerRef.current = setTimeout(async () => {
-    await fetch("/api/post/like", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        postId: newsDetail.id,
-        isLiked: !newAddon.isLiked, // ใช้ค่าจาก state เก่าได้ถ้าต้อง
-      }),
+    setNewAddon((prev) => {
+      const isLiked = !prev.isLiked;
+      const likes = isLiked ? prev.likes + 1 : prev.likes - 1;
+      return { ...prev, isLiked, likes };
     });
-    timerRef.current = null;
-  }, 3000);
-};
+
+    if (likeTimerRef.current) clearTimeout(likeTimerRef.current);
+    likeTimerRef.current = setTimeout(async () => {
+      await fetch("/api/post/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: newsDetail.id,
+          isLiked: !newAddon.isLiked,
+        }),
+      });
+      likeTimerRef.current = null;
+    }, 1500);
+  };
 
   const handleReport = () => {
     setNewAddon((prev) => ({ ...prev, isReportOpen: true }));
@@ -101,7 +115,36 @@ useEffect(() => {
 
   const handleBookmark = () => {
     setNewAddon((prev) => ({ ...prev, isBookmarked: !prev.isBookmarked }));
+
+    if (bookmarkTimerRef.current) clearTimeout(bookmarkTimerRef.current);
+
+    bookmarkTimerRef.current = setTimeout(async () => {
+      await fetch("/api/post/bookmark", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId: newsDetail.id,
+          isBookmarked: !newAddon.isBookmarked,
+        }),
+      });
+      bookmarkTimerRef.current = null;
+    }, 1500);
   };
+
+  function timeAgo(dateString) {
+    const now = new Date();
+    const past = new Date(dateString.replace("Z", "+07:00"));
+    const diffMs = now - past; // ต่างกันเป็น milliseconds
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHour = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHour / 24);
+
+    if (diffSec < 60) return `${diffSec} วินาทีที่แล้ว`;
+    if (diffMin < 60) return `${diffMin} นาทีที่แล้ว`;
+    if (diffHour < 24) return `${diffHour} ชั่วโมงที่แล้ว`;
+    return `${diffDay} วันที่แล้ว`;
+  }
 
   const handleReportSubmit = async (payload) => {
     try {
@@ -119,8 +162,6 @@ useEffect(() => {
       }
 
       const data = await res.json();
-      console.log("Report submitted successfully:", data);
-
       return data;
     } catch (err) {
       console.error("Report submission failed:", err);
@@ -153,11 +194,15 @@ useEffect(() => {
         <article className="max-w-4xl mx-auto">
           {/* Header Image */}
           <div className="relative mb-8 rounded-lg overflow-hidden">
-            <img
-              src={newsDetail.image}
-              alt={newsDetail.title}
-              className="w-full h-64 md:h-96 object-cover"
-            />
+            {!newsDetail?.image ? (
+              <div className="w-full h-64 md:h-96 bg-gray-200 animate-pulse rounded-lg" />
+            ) : (
+              <img
+                src={newsDetail.image}
+                alt={newsDetail.title}
+                className="w-full h-64 md:h-96 object-cover"
+              />
+            )}
             <div className="absolute top-4 left-4">
               <Badge className={`${categoryColor} text-gray`}>
                 {newsDetail.category}
@@ -174,9 +219,18 @@ useEffect(() => {
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-4">
               <div className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>{newsDetail.created_at}</span>
+                <span>
+                  {newsDetail?.created_at
+                    ? timeAgo(newsDetail.created_at)
+                    : "กำลังโหลด..."}
+                </span>
               </div>
-              <span>By {newsDetail.user?.username}</span>
+              <span>
+                By{" "}
+                {newsDetail.user?.username
+                  ? newsDetail.user?.username
+                  : "กำลังโหลด..."}
+              </span>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 mb-6">
@@ -192,7 +246,7 @@ useEffect(() => {
             <div className="flex items-center gap-3">
               <Button
                 variant="outline"
-                onClick={handleLike}
+                onClick={() => requireLogin(handleLike)}
                 className={`flex items-center ${
                   newAddon.isLiked
                     ? "text-red-500 border-red-500 !important"
@@ -214,7 +268,7 @@ useEffect(() => {
 
               <Button
                 variant="outline"
-                onClick={() => handleBookmark}
+                onClick={() => requireLogin(handleBookmark)}
                 className={
                   newAddon.isBookmarked ? "text-primary border-primary" : ""
                 }
@@ -227,7 +281,10 @@ useEffect(() => {
                 {newAddon.isBookmarked ? "Saved" : "Save"}
               </Button>
 
-              <Button variant="outline" onClick={() => handleReport()}>
+              <Button
+                variant="outline"
+                onClick={() => requireLogin(handleReport)}
+              >
                 <Flag className="h-4 w-4 mr-2" />
                 Report
               </Button>
@@ -245,13 +302,17 @@ useEffect(() => {
           <Separator className="mb-8" />
 
           {/* Comments Section */}
-          <CommentSection id={id.id} />
+          <CommentSection id={id.id} cognitoSub={newsDetail.usersub} />
         </article>
         <ReportModal
           postId={newsDetail.id}
           open={newAddon.isReportOpen}
           onOpenChange={handleReportChange}
           onSubmit={handleReportSubmit}
+        />
+        <RequireLoginAlert
+          showLoginAlert={showLoginAlert}
+          setShowLoginAlert={setShowLoginAlert}
         />
       </main>
     </div>

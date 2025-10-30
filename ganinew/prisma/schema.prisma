@@ -96,10 +96,10 @@ model Comment {
   id        Int       @id @default(autoincrement())
   post_id   Int
   detail    String
-  user_id   Int       @default(1)
+  cognitoSub String   @db.Uuid   
   parent_id Int?
 
-  user      Users     @relation(fields: [user_id], references: [id])
+  user      Users   @relation(fields: [cognitoSub], references: [cognitoSub])
   post      Posts     @relation(fields: [post_id], references: [id])
   parent    Comment?  @relation("CommentReplies", fields: [parent_id], references: [id])
   replies   Comment[] @relation("CommentReplies")
@@ -137,10 +137,10 @@ model Reports {
 
 model Bookmark{
   id Int @id @default(autoincrement())
-  user_id Int
+  user_sub String   @db.Uuid
   post_id Int 
 
-  user   Users    @relation(fields: [user_id], references: [id])
+  user   Users    @relation(fields: [user_sub], references: [cognitoSub])
   post   Posts?   @relation(fields: [post_id], references: [id])
 }
 

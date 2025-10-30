@@ -11,16 +11,17 @@ export const Page = (params) => {
   /*  const [selected, setSelected] = useState("All"); */
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const [filteredNews, setFilteredNews] = useState([]);
+  const [filteredNews, setFilteredNews] = useState(null);
   const [activeFilter, setActiveFilter] = useState("trending");
-  const [allNews, setAllNews] = useState([]);
+  const [allNews, setAllNews] = useState(null);
+
 
   
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch("/api/news");
+        const res = await fetch("/api/news/getAllNews");
         const data = await res.json();
 
         setFilteredNews(data);
@@ -164,6 +165,7 @@ export const Page = (params) => {
             {/* News Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredNews.map((newsItem) => (
+                
                 <NewsCard
                   key={newsItem.id}
                   {...newsItem}

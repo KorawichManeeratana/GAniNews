@@ -13,20 +13,56 @@ const CLIENT_SECRET = process.env.AWS_APP_CLIENT_SECRET || ""; // หากม�
 const REDIRECT_URI = `${process.env.NEXT_PUBLIC_BASE_URL}api/auth/callback`;
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-async function fetchJson(url, opts = {}) {
-  const r = await fetch(url, opts);
-  if (!r.ok) {
-    const t = await r.text();
-    throw new Error(`Fetch failed ${r.status} ${r.statusText}: ${t}`);
-  }
-  return await r.json();
-}
-
 export async function GET(req) {
   try {
     const url = new URL(req.url);
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
+
+    const error = url.searchParams.get("error");
+    const error_description = url.searchParams.get("error_description");
+
+    function generateRandomHex(size = 16) {
+      const array = new Uint8Array(size);
+      crypto.getRandomValues(array); // Web Crypto API
+      return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    console.log("OAuth callback params:", {
+      code,
+      state,
+      error,
+      error_description,
+    });
+
+    if (error === "access_denied") {
+      console.log("User canceled login:", error_description);
+
+      // redirect กลับไป Google login อีกครั้ง
+      const domain = process.env.COGNITO_DOMAIN;
+      const clientId = process.env.AWS_APP_CLIENT_ID;
+      const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}api/auth/callback`;
+      const state = generateRandomHex(16);
+      const nonce = generateRandomHex(16);
+
+      const params = new URLSearchParams({
+        response_type: "code",
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        scope: "openid email profile",
+        state,
+        nonce,
+        identity_provider: "Google",
+      });
+
+      const redirectUrl = `https://${domain}/oauth2/authorize?${params.toString()}`;
+      const res = NextResponse.redirect(redirectUrl);
+
+      res.cookies.set("oauth_state", state, { httpOnly: true, path: "/" });
+      res.cookies.set("oauth_nonce", nonce, { httpOnly: true, path: "/" });
+
+      return res;
+    }
 
     const cookieState = req.cookies.get("oauth_state")?.value;
     const cookieNonce = req.cookies.get("oauth_nonce")?.value;
@@ -101,7 +137,6 @@ export async function GET(req) {
 
     if (!sub) throw new Error("No subject in id_token");
 
-
     //Upsert user ใน DB ด้วย Prisma
     const user = await prisma.users.upsert({
       where: { cognitoSub: sub },
@@ -110,11 +145,7 @@ export async function GET(req) {
         email,
         userinfo: {
           upsert: {
-            update: {
-              name,
-              photo: picture,
-              // bio, location สามารถใส่ default หรือ null
-            },
+            update: {}, //login ใหม่ค่าจะได้ไม่ถูกเขัยนทับ
             create: {
               name,
               photo: picture,
@@ -148,7 +179,7 @@ export async function GET(req) {
         secure: process.env.NODE_ENV,
         sameSite: "lax",
         path: "/api",
-        maxAge: tokenJson.expires_in || 30 * 24 * 60 * 60, //30 วัน
+        maxAge: 30 * 24 * 60 * 60, //30 วัน
       });
     }
 
@@ -164,6 +195,7 @@ export async function GET(req) {
       sameSite: "lax",
       secure: process.env.NODE_ENV,
       path: "/",
+      maxAge: tokenJson.expires_in, // ตามเวลาหมดอายุที่ Cognito แจ้งมา
     });
 
     // ลบ oauth_state/nonce cookie ที่ไม่จำเป็นแล้ว

@@ -28,7 +28,6 @@ export async function POST(req) {
             Body: buffer,
             ContentType: file.type,
         }
-        console.log("param  : ", params)
         const command = new PutObjectCommand(params)
 
 

@@ -40,7 +40,7 @@ export const Editpost = () => {
         const fetchpostdata = async () => {
             setSelectgen([])
             try {
-                const respost = await fetch('/api/news')
+                const respost = await fetch('/api/news/getAllNews')
                 const postdata = await respost.json()
                 const result = postdata.find(i => String(i.id) === String(postid))
 

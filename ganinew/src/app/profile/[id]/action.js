@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 const prisma = new PrismaClient()
 export async function deletebookmark(formData) {
     const bookmark_id = formData.get("bookmark_id")
+    const user_id = formData.get("user_id")
+
     try {
         await prisma.bookmark.delete({
             where: { id: Number(bookmark_id) }
@@ -11,5 +13,5 @@ export async function deletebookmark(formData) {
     } catch (err) {
         console.log("Error : ", err)
     }
-    redirect("/profile")
+    redirect(`/profile/${user_id}`)
 }

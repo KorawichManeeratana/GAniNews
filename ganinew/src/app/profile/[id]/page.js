@@ -5,26 +5,31 @@ import { useRouter } from "next/navigation";
 import { Pen } from 'lucide-react'
 import Link from 'next/link'
 import { deletebookmark } from './action'
+import { set } from "nprogress";
+import { ProfileSkeleton } from "@/components/profileSkeleton";
+
 export default function profile({ params }) {
   const [isOwner, setIsOwner] = useState(false);
   const [userinfo, setUserinfo] = useState([]);
-  const [user, setUser] = useState([]);
-  const [gendata, setGenresdata] = useState([]);
   const id = React.use(params);
   const router = useRouter();
   const [expand, setExpand] = useState(false)
+  const [isloading, setIsloading] = useState(true);
+
   useEffect(() => {
     if (!id) return;
 
     const fetchdata = async () => {
+      setIsloading(true);
       try {
         const apiuserinfo = await fetch(`/api/userinfo?id=${id.id}`);
         const datauserinfo = await apiuserinfo.json();
-        console.log("datauserinfo ----> ", datauserinfo.isOwner)
         setUserinfo([datauserinfo.userinfo]);
         setIsOwner(datauserinfo.isOwner);
       } catch (err) {
         console.log("Error is : ", err);
+      } finally {
+        setIsloading(false);
       }
     };
     fetchdata();
@@ -52,7 +57,7 @@ export default function profile({ params }) {
         </span>
       </div>
 
-      {userinfo.map((i, index) => (
+      {isloading?  <ProfileSkeleton /> : userinfo.map((i, index) => (
         <div
           key={index}
           className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 px-4"
@@ -157,6 +162,7 @@ export default function profile({ params }) {
                       <div className="flex justify-center gap-2">
                         <form action={deletebookmark}>
                           <input type="hidden" name="bookmark_id" value={j.id} />
+                          <input type="hidden" name="user_id" value={id.id} />
                           <button
                             className="w-full py-2 rounded-lg bg-gradient-to-r from-red-500 to-pink-500 
                                     text-white font-medium shadow-md hover:shadow-lg 

@@ -10,7 +10,7 @@ export async function GET() {
     const redirectUri = `${process.env.NEXT_PUBLIC_BASE_URL}api/auth/callback`;
     const state = crypto.randomBytes(16).toString("hex");
     const nonce = crypto.randomBytes(16).toString("hex");
-
+  
     const params = new URLSearchParams({
       response_type: "code",
       client_id: clientId,

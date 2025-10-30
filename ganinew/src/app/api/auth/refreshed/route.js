@@ -2,7 +2,6 @@ const COGNITO_DOMAIN = process.env.COGNITO_DOMAIN;
 const CLIENT_ID = process.env.AWS_APP_CLIENT_ID;
 export async function POST(req) {
   const { refreshToken } = await req.json();
-  console.log("Refresh Token:", refreshToken);
 
   if (!refreshToken) {
     return Response.json({ error: "missing_refresh_token" }, { status: 400 });

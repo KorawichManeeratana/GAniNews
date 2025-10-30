@@ -14,11 +14,15 @@ export async function GET(req) {
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
+  var payload = null;
 
-  const { payload } = await jwtVerify(idToken, JWKS, {
-        issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
-        audience: process.env.AWS_APP_CLIENT_ID,
+  if (idToken) {
+    const verified = await jwtVerify(idToken, JWKS, {
+      issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
+      audience: process.env.AWS_APP_CLIENT_ID,
     });
+    payload = verified.payload;
+  }
 
   try {
     var news = await prisma.posts.findUnique({
@@ -32,6 +36,7 @@ export async function GET(req) {
             genre: true, //field นี้ตรงกับ model genrespost
           },
         },
+        bookmark: true,
       },
     });
     
@@ -42,10 +47,15 @@ export async function GET(req) {
         news = {...news, userHasLiked: false}
       }
 
+      if (news.bookmark.some(book => book.user_sub === payload.sub)){
+        news = {...news, userHasBookmarked: true}
+      }
+
       const withuser = {...news, usersub : payload.sub};
       return NextResponse.json(withuser);
       }
     else{
+      news = {...news, userHasLiked: false}
       return NextResponse.json(news);
     }
 

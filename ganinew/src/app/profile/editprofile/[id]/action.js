@@ -29,16 +29,14 @@ export default async function updateProfile(formData) {
     if (payload.token_use !== "id") {
         return NextResponse.json({ message: "Invalid token use" }, { status: 401 });
     }
-    const user_id = payload.sub; // ในโปรเจกต์จริงควรดึงจาก session หรือ token
+    const user_id = payload.sub;
 
     const name = formData.get("name");
     const email = formData.get("email");
     const location = formData.get("location");
     const bio = formData.get("bio");
     const genresform = formData.get("genres");
-    const file = formData.get("file"); // 🟣 ไฟล์ใหม่จาก form
-    console.log("payload ::::", payload)
-    console.log("file::::", file)
+    const file = formData.get("file"); // ไฟล์ใหม่จาก form
     let insertdata;
     let genres = [];
 
@@ -54,7 +52,7 @@ export default async function updateProfile(formData) {
     );
 
     try {
-        // 🔹 ดึงข้อมูล userInfo เดิมเพื่อตรวจสอบรูปเก่า
+        // ดึงข้อมูล userInfo เดิมเพื่อตรวจสอบรูปเก่า
         const oldInfo = await prisma.users.findUnique({
             where: { cognitoSub: user_id },
             include: {
@@ -65,11 +63,11 @@ export default async function updateProfile(formData) {
         let oldImageUrl = oldInfo?.userinfo.photo || null;
         let fileUrl = oldImageUrl;
 
-        // 🔹 ถ้ามีไฟล์ใหม่ → ลบไฟล์เก่าออกจาก S3
+        // ถ้ามีไฟล์ใหม่ → ลบไฟล์เก่าออกจาก S3
         if (file && file.size > 0 && file.name !== "undefined" && oldImageUrl) {
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+            const protocol = process.env.NODE_ENV ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {
@@ -84,14 +82,14 @@ export default async function updateProfile(formData) {
             }
         }
 
-        // 🔹 ถ้ามีไฟล์ใหม่ → อัปโหลดขึ้น S3
+        // ถ้ามีไฟล์ใหม่ → อัปโหลดขึ้น S3
         if (file && file.size > 0 && file.name !== "undefined") {
             const uploadForm = new FormData();
             uploadForm.append("file", file);
 
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+            const protocol = process.env.NODE_ENV ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {
@@ -112,7 +110,7 @@ export default async function updateProfile(formData) {
         }
 
 
-        // 🔹 อัปเดต email ใน users
+        // อัปเดต email ใน users
         if (email) {
             await prisma.users.update({
                 where: { cognitoSub: user_id },
@@ -120,14 +118,13 @@ export default async function updateProfile(formData) {
             });
         }
 
-        // 🔹 อัปเดตหรือสร้าง userInfo
+        //  อัปเดตหรือสร้าง userInfo
         const userInfoExists = await prisma.users.findUnique({
             where: { cognitoSub: user_id },
             include: {
                 userinfo: true,
             }
         });
-        console.log("userInfoExists ::::", userInfoExists.id)
 
 
         if (!userInfoExists) {
@@ -143,7 +140,7 @@ export default async function updateProfile(formData) {
             });
         }
 
-        // 🔹 อัปเดต genres
+        // อัปเดต genres
         await prisma.userGen.deleteMany({ where: { userinfo_id: insertdata.id } });
         if (genres.length > 0) {
             await Promise.all(

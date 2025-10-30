@@ -5,13 +5,6 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const { postId, topics, detail, userId } = body;
-
-    console.log("postId:", postId)
-    console.log("userId:", userId)
-    console.log("topics:", topics)
-    console.log("detail:", detail)
-
-
     if (!postId || !Array.isArray(topics) || topics.length === 0) {
       return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
     }

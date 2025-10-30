@@ -4,7 +4,8 @@ import { NextResponse } from "next/server";
 const prisma = new PrismaClient();
 
 export async function GET(request, { params }) {
-  const postId = Number(params.id);
+  const { id } = await params;
+  const postId = Number(id);
 
   if (isNaN(postId)) {
     return NextResponse.json({ error: "Invalid post id" }, { status: 400 });
@@ -52,7 +53,8 @@ export async function GET(request, { params }) {
 }
 
 export async function POST(request, { params }) {
-  const postId = Number(params.id);
+  const { id } = await params;
+  const postId = Number(id);
 
   if (isNaN(postId)) {
     return NextResponse.json({ error: "Invalid post id" }, { status: 400 });
@@ -60,11 +62,11 @@ export async function POST(request, { params }) {
 
   try {
     const body = await request.json();
-    const { detail, user_id, parent_id } = body;
+    const { detail, cognitoSub, parent_id } = body;
 
-    if (!detail || !user_id) {
+    if (!detail || !cognitoSub) {
       return NextResponse.json(
-        { error: "Missing required fields: detail, user_id" },
+        { error: "Missing required fields: detail, cognitoSub" },
         { status: 400 }
       );
     }
@@ -72,7 +74,7 @@ export async function POST(request, { params }) {
     const newComment = await prisma.comment.create({
       data: {
         post_id: postId,
-        user_id: Number(user_id),
+        cognitoSub: cognitoSub,
         detail,
         parent_id: parent_id ? Number(parent_id) : null,
       },

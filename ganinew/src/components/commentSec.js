@@ -5,17 +5,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import RequireLoginAlert from "@/components/requireLoginAlert";
 
-const CommentItem = ({ comment, postId, refreshComments, isReply = false }) => {
+const CommentItem = ({ comment, postId, refreshComments, isReply = false, cognitoSub}) => {
   const [likes, setLikes] = useState(comment.likes || 0);
   const [isLiked, setIsLiked] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyText, setReplyText] = useState("");
-
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikes((prev) => (isLiked ? prev - 1 : prev + 1));
-  };
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
 
   const handleReply = async () => {
     if (!replyText.trim()) return;
@@ -26,7 +23,7 @@ const CommentItem = ({ comment, postId, refreshComments, isReply = false }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           detail: replyText,
-          user_id: 1,
+          cognitoSub: cognitoSub,
           parent_id: comment.id,
         }),
       });
@@ -38,6 +35,15 @@ const CommentItem = ({ comment, postId, refreshComments, isReply = false }) => {
       console.error("Error posting reply:", err);
     }
   };
+
+  function requireLogin(action) {
+
+    if (!cognitoSub) {
+      setShowLoginAlert(true); // เปิด alert dialog
+      return;
+    }
+    action();
+  }
 
   return (
     <div
@@ -68,20 +74,6 @@ const CommentItem = ({ comment, postId, refreshComments, isReply = false }) => {
           <p className="text-sm text-foreground">{comment.detail}</p>
 
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-auto p-1 ${
-                isLiked ? "text-red-500" : "text-muted-foreground"
-              }`}
-              onClick={handleLike}
-            >
-              <Heart
-                className={`h-3 w-3 mr-1 ${isLiked ? "fill-current" : ""}`}
-              />
-              <span className="text-xs">{likes}</span>
-            </Button>
-
             {!isReply && (
               <Button
                 variant="ghost"
@@ -104,7 +96,7 @@ const CommentItem = ({ comment, postId, refreshComments, isReply = false }) => {
                 className="min-h-[80px]"
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleReply}>
+                <Button size="sm" onClick={() => requireLogin(handleReply)}>
                   Reply
                 </Button>
                 <Button
@@ -128,25 +120,31 @@ const CommentItem = ({ comment, postId, refreshComments, isReply = false }) => {
                   postId={postId}
                   refreshComments={refreshComments}
                   isReply
+                  cognitoSub={cognitoSub}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+      <RequireLoginAlert
+        showLoginAlert={showLoginAlert}
+        setShowLoginAlert={setShowLoginAlert}
+      />
     </div>
   );
 };
 
-export const CommentSection = ({ id }) => {
+export const CommentSection = ({ id, cognitoSub }) => {
   const postId = id;
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [showLoginAlert, setShowLoginAlert] = useState(false);
 
   const fetchComments = async () => {
     try {
       const res = await fetch(`/api/comment/${postId}`);
-      
+
       if (!res.ok) throw new Error(`API error: ${res.status}`);
       const data = await res.json();
       setComments(Array.isArray(data) ? data : []);
@@ -155,6 +153,14 @@ export const CommentSection = ({ id }) => {
       setComments([]);
     }
   };
+
+  function requireLogin(action) {
+    if (!cognitoSub) {
+      setShowLoginAlert(true); // เปิด alert dialog
+      return;
+    }
+    action();
+  }
 
   useEffect(() => {
     if (postId) fetchComments();
@@ -169,7 +175,7 @@ export const CommentSection = ({ id }) => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           detail: newComment,
-          user_id: 1,
+          cognitoSub: cognitoSub,
           parent_id: null,
         }),
       });
@@ -184,9 +190,7 @@ export const CommentSection = ({ id }) => {
   return (
     <Card className="p-6">
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold">
-          Comments ({comments.length})
-        </h3>
+        <h3 className="text-lg font-semibold">Comments ({comments.length})</h3>
 
         {/* New Comment Form */}
         <div className="space-y-3">
@@ -197,10 +201,7 @@ export const CommentSection = ({ id }) => {
             className="min-h-[100px]"
           />
           <div className="flex justify-end">
-            <Button
-              onClick={handleSubmitComment}
-              disabled={!newComment.trim()}
-            >
+            <Button onClick={() => requireLogin(handleSubmitComment)} disabled={!newComment.trim()}>
               Post Comment
             </Button>
           </div>
@@ -217,6 +218,7 @@ export const CommentSection = ({ id }) => {
                 comment={c}
                 postId={postId}
                 refreshComments={fetchComments}
+                cognitoSub={cognitoSub}
               />
             ))
           ) : (
@@ -224,6 +226,10 @@ export const CommentSection = ({ id }) => {
           )}
         </div>
       </div>
+      <RequireLoginAlert
+        showLoginAlert={showLoginAlert}
+        setShowLoginAlert={setShowLoginAlert}
+      />
     </Card>
   );
 };

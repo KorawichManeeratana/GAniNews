@@ -9,7 +9,7 @@ export default function ManagePage() {
   useEffect(() => {
     const fetchdata = async () => {
       try {
-        const res = await fetch('/api/news');
+        const res = await fetch('/api/news/getAllNews');
         const data = await res.json();
         setNews(data);
       } catch (err) {

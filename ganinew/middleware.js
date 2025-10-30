@@ -23,7 +23,6 @@ export async function middleware(req) {
     });
 
   const now = Date.now() / 1000;
-  console.log("Payload", payload);
 
   // ถ้า access token หมดอายุแล้ว
   if (payload.exp < now) {

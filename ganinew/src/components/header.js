@@ -65,7 +65,7 @@ export const Header = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between py-1">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 cursor-pointer">
             <div className="h-8 w-8 rounded-lg bg-violet-500 flex items-center justify-center">
               <span className="text-white font-bold text-sm">G</span>
             </div>
@@ -112,9 +112,6 @@ export const Header = () => {
                   <DropdownMenuSeparator />
                     <DropdownMenuCheckboxItem onClick={handleToProfile}>
                       Profile
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem>
-                      Settings
                     </DropdownMenuCheckboxItem>
                     <DropdownMenuCheckboxItem onClick={handleLogout}>Logout</DropdownMenuCheckboxItem>
                   </DropdownMenuContent>
