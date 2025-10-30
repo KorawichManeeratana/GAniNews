@@ -1,17 +1,15 @@
 'use server';
-import { jwtVerify, createRemoteJWKSet } from "jose";
 import { PrismaClient } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-const region = process.env.AWS_REGION;
-const userPoolId = process.env.AWS_USER_POOL_ID;
-const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
-const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export default async function updateProfile(formData) {
+    // อ่าน cookie server-side
     const cookieStore = await require("next/headers").cookies();
     const idTokenCookie = cookieStore.get("id_token");
     const idToken = idTokenCookie?.value;
@@ -20,17 +18,16 @@ export default async function updateProfile(formData) {
         return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
     }
 
-    const { payload } = await jwtVerify(idToken, JWKS, {
-        issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
-        audience: process.env.AWS_APP_CLIENT_ID,
-    });
-
-    // ตรวจสอบ token_use
-    if (payload.token_use !== "id") {
-        return NextResponse.json({ message: "Invalid token use" }, { status: 401 });
+    let payload;
+    try {
+        payload = jwt.verify(idToken, JWT_SECRET);
+    } catch (err) {
+        return NextResponse.json({ message: "Invalid token", error: err.message }, { status: 401 });
     }
-    const user_id = payload.sub;
 
+    const userSub = payload.sub;
+
+    // ดึงค่า form data
     const name = formData.get("name");
     const email = formData.get("email");
     const location = formData.get("location");
@@ -54,20 +51,18 @@ export default async function updateProfile(formData) {
     try {
         // ดึงข้อมูล userInfo เดิมเพื่อตรวจสอบรูปเก่า
         const oldInfo = await prisma.users.findUnique({
-            where: { cognitoSub: user_id },
-            include: {
-                userinfo: true,
-            }
+            where: { cognitoSub: userSub },
+            include: { userinfo: true },
         });
 
-        let oldImageUrl = oldInfo?.userinfo.photo || null;
+        let oldImageUrl = oldInfo?.userinfo?.photo || null;
         let fileUrl = oldImageUrl;
 
-        // ถ้ามีไฟล์ใหม่ → ลบไฟล์เก่าออกจาก S3
-        if (file && file.size > 0 && file.name !== "undefined" && oldImageUrl) {
+        // ลบไฟล์เก่าจาก S3 ถ้ามีไฟล์ใหม่
+        if (file && file.size > 0 && oldImageUrl) {
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV ? "http" : "https";
+            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {
@@ -82,14 +77,14 @@ export default async function updateProfile(formData) {
             }
         }
 
-        // ถ้ามีไฟล์ใหม่ → อัปโหลดขึ้น S3
-        if (file && file.size > 0 && file.name !== "undefined") {
+        // อัปโหลดไฟล์ใหม่
+        if (file && file.size > 0) {
             const uploadForm = new FormData();
             uploadForm.append("file", file);
 
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV ? "http" : "https";
+            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {
@@ -105,36 +100,30 @@ export default async function updateProfile(formData) {
                 console.error("S3 upload error:", err);
                 return NextResponse.json({ error: "File upload failed" }, { status: 400 });
             }
-        } else {
-            console.log("File is empty or undefined, skipping S3 upload");
         }
-
 
         // อัปเดต email ใน users
         if (email) {
             await prisma.users.update({
-                where: { cognitoSub: user_id },
+                where: { cognitoSub: userSub },
                 data: { email },
             });
         }
 
-        //  อัปเดตหรือสร้าง userInfo
+        // อัปเดตหรือสร้าง userInfo
         const userInfoExists = await prisma.users.findUnique({
-            where: { cognitoSub: user_id },
-            include: {
-                userinfo: true,
-            }
+            where: { cognitoSub: userSub },
+            include: { userinfo: true },
         });
 
-
-        if (!userInfoExists) {
+        if (!userInfoExists.userinfo) {
             insertdata = await prisma.userInfo.create({
                 data: { ...checkdata, user_id: userInfoExists.id, photo: fileUrl },
                 select: { id: true },
             });
         } else {
             insertdata = await prisma.userInfo.update({
-                where: { user_id: userInfoExists.id },
+                where: { user_id: userInfoExists.userinfo.id },
                 data: { ...checkdata, photo: fileUrl },
                 select: { id: true },
             });

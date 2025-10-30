@@ -1,115 +1,79 @@
-import { createRemoteJWKSet, jwtVerify } from 'jose';
 import crypto from "crypto";
-import {
-  CognitoIdentityProviderClient,
-  InitiateAuthCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
-import { NextResponse } from "next/server"
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import prisma from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
-const region = process.env.AWS_REGION;
-const client = new CognitoIdentityProviderClient({
-  region: region,
-});
-const userPoolId = process.env.AWS_USER_POOL_ID;
-const CLIENT_ID = process.env.AWS_APP_CLIENT_ID;
-const CLIENT_SECRET = process.env.AWS_APP_CLIENT_SECRET || "";
-
-function calcSecretHash(username, clientId, clientSecret) {
-  if (!clientSecret) return undefined;
-  return crypto
-    .createHmac("sha256", clientSecret)
-    .update(username + clientId)
-    .digest("base64");
-}
-
-const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
-const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+// Secret สำหรับ sign JWT ของเราเอง
+const JWT_SECRET = process.env.JWT_SECRET;
+const TOKEN_EXPIRE = 60 * 60; // 1 ชั่วโมง
 
 export async function POST(req) {
-
   try {
-    // ต้อง await .json() ใน App Router
-    const body = await req.json();
-
-    const { email, password } = body || {};
+    const { email, password } = await req.json();
     if (!email || !password) {
-      return new Response(JSON.stringify({ message: "Missing email/password" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return NextResponse.json({ message: "Missing email/password" }, { status: 400 });
     }
 
-    const secretHash = calcSecretHash(email, CLIENT_ID, CLIENT_SECRET);
-    const params = {
-      AuthFlow: "USER_PASSWORD_AUTH",
-      ClientId: CLIENT_ID,
-      AuthParameters: { USERNAME: email, PASSWORD: password },
-    };
+    // Normalize email ก่อนค้นหา
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (secretHash) params.AuthParameters.SECRET_HASH = secretHash;
-
-    const resp = await client.send(new InitiateAuthCommand(params));
-
-    if (!resp.AuthenticationResult) {
-      return NextResponse.json(
-        { message: "Additional action required", challenge: resp.ChallengeName || null, details: resp },
-        { status: 202 }
-      );
+    // หา user ใน DB
+    const user = await prisma.users.findUnique({ where: { email: normalizedEmail } });
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    const { RefreshToken, IdToken, AccessToken, ExpiresIn } = resp.AuthenticationResult;
-    if (!IdToken) {
-      return NextResponse.json({ message: "No IdToken returned" }, { status: 500 });
+    // ตรวจสอบ password hash
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return NextResponse.json({ message: "Invalid password" }, { status: 401 });
     }
 
-    const { payload } = await jwtVerify(IdToken, JWKS, {
-      issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
-      audience: CLIENT_ID,
-    });
-
-
-    if (payload.token_use !== "id") {
-      return NextResponse.json({ message: "Unexpected token use" }, { status: 400 });
-    }
+    // สร้าง JWT token ของเราเอง
+    const payload = { sub: user.cognitoSub, email: user.email };
+    const idToken = jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRE });
+    const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: TOKEN_EXPIRE });
+    const refreshToken = crypto.randomUUID(); // Mock refresh token
 
     const res = NextResponse.json(
-      { status: "OK", user: { sub: payload.sub, email: payload.email } },
+      { status: "OK", user: { sub: user.cognitoSub, email: user.email } },
       { status: 200 }
     );
-    
-    const isProd = process.env.NODE_ENV;
 
-    if (RefreshToken) {
-    res.cookies.set("refresh_token", RefreshToken, {
+    const isProd = process.env.NODE_ENV === "production";
+
+    res.cookies.set("refresh_token", refreshToken, {
       httpOnly: true,
       secure: isProd,
       sameSite: "lax",
       path: "/api",
-      maxAge: 60 * 60 * 24 * 30, //30 วัน
+      maxAge: 60 * 60 * 24 * 30, // 30 วัน
     });
-  }
 
-    res.cookies.set("id_token", IdToken, {
+    res.cookies.set("id_token", idToken, {
       httpOnly: true,
       sameSite: "lax",
       secure: isProd,
       path: "/",
-      maxAge: ExpiresIn,
+      maxAge: TOKEN_EXPIRE,
     });
 
-    res.cookies.set("access_token", AccessToken, {
+    res.cookies.set("access_token", accessToken, {
       httpOnly: true,
       sameSite: "lax",
       secure: isProd,
       path: "/",
-      maxAge: ExpiresIn,
+      maxAge: TOKEN_EXPIRE,
     });
 
     return res;
+
   } catch (err) {
-    console.error("Cognito login error:", err);
-    return NextResponse.json({ message: err?.message || "Login failed", status: "ERROR" }, {
-      status: 400
-    });
+    console.error("Mock login error:", err);
+    return NextResponse.json(
+      { message: err?.message || "Login failed", status: "ERROR" },
+      { status: 400 }
+    );
   }
 }

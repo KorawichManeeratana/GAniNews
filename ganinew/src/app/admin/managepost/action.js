@@ -17,7 +17,7 @@ export default async function deletepost(formData) {
         if (post?.image) {
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+            const protocol = process.env.NODE_ENV ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {
@@ -35,6 +35,14 @@ export default async function deletepost(formData) {
             }
         }
 
+        await prisma.likes.deleteMany({
+            where: { post_id: Number(postid) },
+        });
+
+        await prisma.bookmark.deleteMany({
+            where: { post_id: Number(postid) },
+        });
+
         await prisma.comment.deleteMany({
             where: { post_id: Number(postid) },
         });
@@ -47,6 +55,11 @@ export default async function deletepost(formData) {
             where: { post_id: Number(postid) },
         });
 
+        await prisma.reports.deleteMany({
+            where: { post_id: Number(postid) },
+        });
+
+        // 🔹 ลบโพสต์จริง
         await prisma.posts.delete({
             where: { id: Number(postid) },
         });

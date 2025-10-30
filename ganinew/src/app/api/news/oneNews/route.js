@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import jwt from "jsonwebtoken";
 
-const region = process.env.AWS_REGION;
-const userPoolId = process.env.AWS_USER_POOL_ID;
-const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
-const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET(req) {
   const cookieStore = await require("next/headers").cookies();
@@ -14,52 +11,47 @@ export async function GET(req) {
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
-  var payload = null;
 
+  let payload = null;
   if (idToken) {
-    const verified = await jwtVerify(idToken, JWKS, {
-      issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
-      audience: process.env.AWS_APP_CLIENT_ID,
-    });
-    payload = verified.payload;
+    try {
+      payload = jwt.verify(idToken, JWT_SECRET);
+    } catch (err) {
+      console.error("Invalid token:", err);
+      payload = null;
+    }
   }
 
   try {
-    var news = await prisma.posts.findUnique({
+    let news = await prisma.posts.findUnique({
       where: { id: parseInt(id) },
       include: {
         comments: true,
         user: true,
         likesPost: true,
         genres: {
-          include: {
-            genre: true, //field นี้ตรงกับ model genrespost
-          },
+          include: { genre: true },
         },
         bookmark: true,
       },
     });
-    
-    if (payload){
-      if (news.likesPost.some(like => like.whoLikes === payload.sub)){
-        news = {...news, userHasLiked: true}
-      } else {
-        news = {...news, userHasLiked: false}
-      }
 
-      if (news.bookmark.some(book => book.user_sub === payload.sub)){
-        news = {...news, userHasBookmarked: true}
-      }
-
-      const withuser = {...news, usersub : payload.sub};
-      return NextResponse.json(withuser);
-      }
-    else{
-      news = {...news, userHasLiked: false}
-      return NextResponse.json(news);
+    if (!news) {
+      return NextResponse.json({ message: "Post not found" }, { status: 404 });
     }
 
-    
+    if (payload) {
+      // ตรวจสอบว่า user เคย like หรือ bookmark
+      const userHasLiked = news.likesPost.some(like => like.whoLikes === payload.sub);
+      const userHasBookmarked = news.bookmark.some(book => book.user_sub === payload.sub);
+
+      news = { ...news, userHasLiked, userHasBookmarked, usersub: payload.sub };
+    } else {
+      news = { ...news, userHasLiked: false, userHasBookmarked: false };
+    }
+
+    return NextResponse.json(news);
+
   } catch (err) {
     console.error("Error", err);
     return NextResponse.json({ error: err.message }, { status: 500 });

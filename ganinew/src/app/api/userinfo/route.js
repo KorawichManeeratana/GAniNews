@@ -1,84 +1,52 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import jwt from "jsonwebtoken";
 
-const region = process.env.AWS_REGION;
-const userPoolId = process.env.AWS_USER_POOL_ID;
-const clientId = process.env.AWS_APP_CLIENT_ID;
-const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
-const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET(req) {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
 
-    // ดึง token จาก cookie
-    const cookieStore = req.cookies;
-    const idToken = cookieStore.get("id_token")?.value;
+  // ดึง token จาก cookie
+  const cookieStore = req.cookies;
+  const idToken = cookieStore.get("id_token")?.value;
 
-    if (!idToken) {
-        return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
-    }
+  if (!idToken) {
+    return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
+  }
 
-    let currentUserSub;
-    try {
-        const { payload } = await jwtVerify(idToken, JWKS, {
-            issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
-            audience: clientId,
-        });
+  let currentUserSub;
+  try {
+    const payload = jwt.verify(idToken, JWT_SECRET);
+    currentUserSub = payload.sub; // sub ของผู้เรียก
+  } catch (err) {
+    return NextResponse.json({ message: "Invalid token", error: err.message }, { status: 401 });
+  }
 
-        if (payload.token_use !== "id") {
-            return NextResponse.json({ message: "Invalid token use" }, { status: 401 });
+  // ดึง user info จาก DB
+  const userinfo = await prisma.userInfo.findUnique({
+    where: { user_id: parseInt(id) },
+    include: {
+      user: {
+        include: {
+          bookmark: {
+            include: { post: true }
+          }
         }
-
-        currentUserSub = payload.sub; // Cognito sub ของผู้เรียก
-    } catch (err) {
-        return NextResponse.json({ message: "Invalid token", error: err.message }, { status: 401 });
+      },
+      usergen: {
+        include: { genre: true }
+      }
     }
+  });
 
-    const userinfo = await prisma.userInfo.findUnique({
-            where: {
-                user_id: parseInt(id)
-            },
-            include: {
-                user: {
-                    include: {
-                        bookmark: {
-                            include: {
-                                post: true
-                            }
-                        }
-                    }
-                },
-                usergen: {
-                    include: {
-                        genre: true
-                    }
-                }
-            }
-        })
+  if (!userinfo) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
 
+  // ตรวจสอบว่าเจ้าของ profile ตรงกับ token หรือไม่
+  const isOwner = userinfo.user.cognitoSub === currentUserSub;
 
-
-        if (!userinfo) {
-            return NextResponse.json({ message: "User not found" }, { status: 404 });
-        }
-
-        // ตรวจสอบว่าเจ้าของ profile ตรงกับ token หรือไม่
-        const isOwner = userinfo.user.cognitoSub === currentUserSub;
-
-        return NextResponse.json({ userinfo, isOwner });
-        
-
-
-    }
-// export async function POST(request){
-//     const body = await request.json();
-//     const { gen_name } = body;
-//     const add = await prisma.Genres.create({
-//         data : {
-//             gen_name: gen_name
-//         }
-//     })
-//     return Response.json(add)
-// }
+  return NextResponse.json({ userinfo, isOwner });
+}

@@ -11,12 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
 import { BadgeCheck } from "lucide-react";
 import GoogleLoginButton from "./googleLogionButton";
 
@@ -31,12 +25,11 @@ export const LoginModal = ({ open, onOpenChange, onLoginSuccess }) => {
   });
   const [error, setError] = useState(null);
   const [registering, setRegistering] = useState(false);
-  const [tabValue, setTabValue] = useState("otp");
+  const [tabValue, setTabValue] = useState("login");
 
   // loading states แยกตาม action
   const [loginLoading, setLoginLoading] = useState(false);
   const [registerLoading, setRegisterLoading] = useState(false);
-  const [confirmLoading, setConfirmLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -123,7 +116,7 @@ export const LoginModal = ({ open, onOpenChange, onLoginSuccess }) => {
         throw new Error(data?.message || "Register failed");
       }
 
-      setTabValue("otp");
+      setTabValue("login");
       setRegistering(true);
     } catch (err) {
       console.error("Register error:", err);
@@ -133,42 +126,6 @@ export const LoginModal = ({ open, onOpenChange, onLoginSuccess }) => {
     }
   };
 
-  const handleRegisterConfirmation = async (e) => {
-    e.preventDefault();
-    setError(null);
-    if (confirmLoading) return;
-    setConfirmLoading(true);
-    try {
-      const res = await fetch("/api/auth/registerConfirm", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username: registerData.username,
-          email: registerData.email,
-          password: registerData.password,
-          confirmPassword: registerData.confirmPassword,
-          confirmationCode: registerData.otp,
-        }),
-        credentials: "include",
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data?.message || "Register Comfirmed failed");
-      }
-
-      setTabValue("login");
-      setRegistering(false);
-    } catch (err) {
-      console.error("Register Confirmed error:", err);
-      setError(err.message);
-    } finally {
-      setConfirmLoading(false);
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -232,56 +189,6 @@ export const LoginModal = ({ open, onOpenChange, onLoginSuccess }) => {
               )}
             </form>
           </TabsContent>
-
-          {registering ? (
-            /* เมื่อ Register แล้วจะมี OTP ส่งไปที่ email จะแสดงให้ใส่ที่นี่  */
-            <TabsContent value="otp" className="space-y-4 mt-6">
-              <form onSubmit={handleRegisterConfirmation} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="otp-enter">Enter OTP Code</Label>
-                  <div className="flex flex-col-1 justify-center">
-                    <>
-                      <InputOTP
-                        maxLength={6}
-                        value={registerData.otp}
-                        onChange={(value) =>
-                          setRegisterData({ ...registerData, otp: value })
-                        }
-                      >
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </>
-                    <div className="text-center text-sm">
-                      {registerData.otp === "" ? (
-                        <>Enter your one-time password.</>
-                      ) : (
-                        <>You entered: {registerData.otp}</>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                {confirmLoading ? (
-                  <img
-                    src="images/cat_loading.gif"
-                    alt="Loading..."
-                    className="w-15 h-15 object-contain align-middle mx-auto"
-                    aria-live="polite"
-                  />
-                ) : (
-                  <Button type="submit" className="w-full">
-                    Submit
-                  </Button>
-                )}
-              </form>
-            </TabsContent>
-          ) : (
             <TabsContent value="register" className="space-y-4 mt-6">
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-2">
@@ -418,29 +325,7 @@ export const LoginModal = ({ open, onOpenChange, onLoginSuccess }) => {
                 )}
               </>
             </TabsContent>
-          )}
         </Tabs>
-
-        {registering ? (
-          <></>
-        ) : (
-          <>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <Separator className="w-full" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 align-middle">
-              <GoogleLoginButton />
-            </div>
-          </>
-        )}
       </DialogContent>
     </Dialog>
   );

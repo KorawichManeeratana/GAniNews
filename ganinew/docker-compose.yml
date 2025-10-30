@@ -24,7 +24,7 @@ services:
     networks:
       - ganinew_network
     restart: always
-    command: npm run start
+    command: npx next start -H 0.0.0.0 -p 3000
 
 networks:
   ganinew_network:

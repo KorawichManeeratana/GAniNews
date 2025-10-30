@@ -15,9 +15,6 @@ export default async function updatePost(formData) {
     const description = formData.get("description");
     const file = formData.get("file");
 
-    console.log("file ;::: ",file)
-    console.log("file ;::: ",file.size)
-    console.log("file ;::: ",file.name)
     let rawgenres = [];
     try {
         rawgenres = JSON.parse(genresform);
@@ -37,7 +34,7 @@ export default async function updatePost(formData) {
         if (file && file.size !== 0 && file.name !== "undefined" && oldPost?.image) {
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+            const protocol = process.env.NODE_ENV ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {
@@ -58,7 +55,7 @@ export default async function updatePost(formData) {
 
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+            const protocol = process.env.NODE_ENV ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {

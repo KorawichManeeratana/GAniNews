@@ -1,25 +1,47 @@
-const COGNITO_DOMAIN = process.env.COGNITO_DOMAIN;
-const CLIENT_ID = process.env.AWS_APP_CLIENT_ID;
+import jwt from "jsonwebtoken";
+
+const SECRET = process.env.JWT_SECRET || "mock_secret";
+
+/**
+ * ฟังก์ชันสร้าง Access Token ใหม่ (จำลอง)
+ */
+function generateNewAccessToken(userId) {
+  return jwt.sign({ user_id: userId }, SECRET, { expiresIn: "1h" });
+}
+
 export async function POST(req) {
-  const { refreshToken } = await req.json();
+  try {
+    const { refreshToken } = await req.json();
 
-  if (!refreshToken) {
-    return Response.json({ error: "missing_refresh_token" }, { status: 400 });
+    if (!refreshToken) {
+      return new Response(
+        JSON.stringify({ error: "missing_refresh_token" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    let payload;
+    try {
+      payload = jwt.verify(refreshToken, SECRET);
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: "invalid_or_expired_refresh_token" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const newAccessToken = generateNewAccessToken(payload.user_id);
+
+    return new Response(
+      JSON.stringify({ access_token: newAccessToken }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+
+  } catch (err) {
+    console.error("Error refreshing token:", err);
+    return new Response(
+      JSON.stringify({ error: "internal_server_error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
-
-  const res = await fetch(`https://${COGNITO_DOMAIN}/oauth2/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "refresh_token",
-      client_id: CLIENT_ID,
-      refresh_token: refreshToken,
-    }),
-  });
-
-  if (!res.ok) return Response.json({ error: "failed" }, { status: 401 });
-
-  const data = await res.json();
-
-  return Response.json({ access_token: data.access_token });
 }

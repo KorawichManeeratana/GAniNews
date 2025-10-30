@@ -1,14 +1,9 @@
 import { PrismaClient } from "@prisma/client";
-import { jwtVerify, createRemoteJWKSet } from "jose";
 import { NextResponse } from "next/server";
-
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-const region = process.env.AWS_REGION;
-const userPoolId = process.env.AWS_USER_POOL_ID;
-const clientId = process.env.AWS_APP_CLIENT_ID;
-const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
-const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET(req) {
   const cookieStore = req.cookies;
@@ -18,24 +13,25 @@ export async function GET(req) {
     return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
   }
 
-  const { payload } = await jwtVerify(idToken, JWKS, {
-    issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
-    audience: clientId,
-  });
-
-  if (payload.token_use !== "id") {
-    return NextResponse.json({ message: "Invalid token use" }, { status: 401 });
+  let payload;
+  try {
+    payload = jwt.verify(idToken, JWT_SECRET);
+  } catch (err) {
+    return NextResponse.json({ message: "Invalid token", error: err.message }, { status: 401 });
   }
 
+  // หา user ใน DB ด้วย sub จาก JWT ของเรา
   const user = await prisma.users.findUnique({
-    where: {
-      cognitoSub: payload.sub,
-    },
+    where: { cognitoSub: payload.sub }, // ใช้ sub จาก JWT ของเราเอง
   });
 
-  if (user?.role !== "admin") {
+  if (!user) {
+    return NextResponse.json({ message: "User not found" }, { status: 404 });
+  }
+
+  if (user.role !== "admin") {
     return NextResponse.json({ message: "Access denied" }, { status: 403 });
   }
 
-  return Response.json(user);
+  return NextResponse.json(user, { status: 200 });
 }
