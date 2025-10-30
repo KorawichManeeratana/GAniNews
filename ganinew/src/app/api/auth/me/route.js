@@ -6,7 +6,12 @@ import prisma from "@/lib/prisma";
 const region = process.env.AWS_REGION;
 const userPoolId = process.env.AWS_USER_POOL_ID;
 const jwksUrl = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
-const JWKS = createRemoteJWKSet(new URL(jwksUrl));
+const JWKS = createRemoteJWKSet(new URL(jwksUrl),
+{
+    timeoutDuration: 15000, // เพิ่ม timeout เป็น 15 วินาที
+    cacheMaxAge: 3600000,   // cache 1 ชั่วโมง
+  }
+);
 
 export async function GET(req) {
   try {

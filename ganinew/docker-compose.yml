@@ -13,3 +13,12 @@ services:
       - .:/app
       - /app/node_modules
     command: npm run dev
+    networks:
+      - ganinew-net
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+
+networks:
+  ganinew-net:
+    driver: bridge
