@@ -17,7 +17,7 @@ export default async function deletepost(formData) {
         if (post?.image) {
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV ? "http" : "https";
+            const protocol = process.env.NODE_ENV === 'production' ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {

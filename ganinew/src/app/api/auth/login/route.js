@@ -41,11 +41,11 @@ export async function POST(req) {
       { status: 200 }
     );
 
-    const isProd = process.env.NODE_ENV === "production";
+    const isSecure = process.env.NEXT_PUBLIC_BASE_URL.startsWith("https");
 
     res.cookies.set("refresh_token", refreshToken, {
       httpOnly: true,
-      secure: isProd,
+      secure: isSecure,
       sameSite: "lax",
       path: "/api",
       maxAge: 60 * 60 * 24 * 30, // 30 วัน
@@ -54,7 +54,7 @@ export async function POST(req) {
     res.cookies.set("id_token", idToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: isProd,
+      secure: isSecure,
       path: "/",
       maxAge: TOKEN_EXPIRE,
     });
@@ -62,7 +62,7 @@ export async function POST(req) {
     res.cookies.set("access_token", accessToken, {
       httpOnly: true,
       sameSite: "lax",
-      secure: isProd,
+      secure: isSecure,
       path: "/",
       maxAge: TOKEN_EXPIRE,
     });

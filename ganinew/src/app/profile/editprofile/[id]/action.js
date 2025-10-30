@@ -62,7 +62,7 @@ export default async function updateProfile(formData) {
         if (file && file.size > 0 && oldImageUrl) {
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+            const protocol = process.env.NODE_ENV === 'production' ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {
@@ -84,7 +84,7 @@ export default async function updateProfile(formData) {
 
             const h = await headers();
             const host = h.get("host");
-            const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+            const protocol = process.env.NODE_ENV === 'production' ? "http" : "https";
             const baseUrl = `${protocol}://${host}`;
 
             try {

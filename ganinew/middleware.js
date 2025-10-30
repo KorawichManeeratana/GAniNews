@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 // ตั้งค่า environment
-const isProd = process.env.NODE_ENV;
+const isProd = process.env.NODE_ENV === 'production' ? "http" : "https";
 
 export async function middleware(req) {
   const accessToken = req.cookies.get("access_token")?.value;

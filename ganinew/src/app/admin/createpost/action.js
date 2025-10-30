@@ -44,7 +44,7 @@ export default async function createPost(formData) {
 
     const h = await headers();
     const host = h.get("host");
-    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const protocol = process.env.NODE_ENV === 'production' ? "http" : "https";
     const baseUrl = `${protocol}://${host}`;
 
     try {
