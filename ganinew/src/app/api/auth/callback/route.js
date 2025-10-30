@@ -48,7 +48,7 @@ export async function GET(req) {
       const params = new URLSearchParams({
         response_type: "code",
         client_id: clientId,
-        redirect_uri: redirectUri,
+        redirect_uri: redirectUri /*  */,
         scope: "openid email profile",
         state,
         nonce,
